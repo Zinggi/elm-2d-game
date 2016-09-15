@@ -1,4 +1,4 @@
-module Camera exposing (..)
+module Game.TwoD.Camera exposing (..)
 
 import Math.Vector2 exposing (..)
 import Math.Matrix4 exposing (..)
@@ -26,18 +26,3 @@ makeProjectionMatrix ( w, h ) { position, width } =
             ( x - w, x + w, y - h, y + h )
     in
         makeOrtho2D l r d u
-
-
-
--- render : ( Float, Float ) -> Float -> Camera -> Form -> Form
--- render (( w, h ) as screenDimensions) zoom { width, position } form =
---     let
---         ( x, y ) =
---             toTuple position
---
---         scaleFactor =
---             w / (width * zoom)
---     in
---         form
---             |> Collage.scale (scaleFactor)
---             |> move ( -x * scaleFactor, -y * scaleFactor )
