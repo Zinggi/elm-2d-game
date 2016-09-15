@@ -8,13 +8,13 @@ type alias Camera =
     { position : Vec2, baseWidth : Float, width : Float }
 
 
-init : Vec2 -> Float -> Camera
-init pos baseWidth =
-    Camera pos baseWidth baseWidth
+init : ( Float, Float ) -> Float -> Camera
+init ( x, y ) baseWidth =
+    Camera (vec2 x y) baseWidth baseWidth
 
 
-makeProjectionMatrix : ( Float, Float ) -> Camera -> Mat4
-makeProjectionMatrix ( w, h ) { position, width } =
+getProjectionMatrix : ( Float, Float ) -> Camera -> Mat4
+getProjectionMatrix ( w, h ) { position, width } =
     let
         ( x, y ) =
             toTuple position
