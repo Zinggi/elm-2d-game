@@ -393,47 +393,13 @@ A very simple shader, coloring the whole area in a single color
 
 ---
 
-# Game.TwoD.Shapes
-
-
-# Shapes for WebGL rendering.
-
-You don't need this module,
-unless you want to have a ready made square for a custom vertex shader.
-Since we're dealing with 2d only,
-the only available shape is a square
-
-```elm
-unitSquare : WebGL.Drawable Game.TwoD.Shapes.Vertex
-```
-
-A square with corners (0, 0), (1, 1)
-
----
-
-
-```elm
-type alias Vertex = 
-  { a_position : Math.Vector2.Vec2 }
-```
-
-Just an alias for a 2d vector.
-Needs to be in a record because it will be passed as an
-attribute to the vertex shader
-
----
-
-
-
----
-
 # Game.TwoD.Camera
 
 
 This provides a basic camera.
 
 You don't have to use this functions to get a working camera,
-you can just fallow the `Camera` type.
+you can just follow the `Camera` type.
 
 E.g. in my game I have a camera that can follow the player and that does the right thing when the player dies etc.
 
@@ -525,6 +491,40 @@ getProjectionMatrix : ( Float, Float ) -> Game.TwoD.Camera.Camera a -> Math.Matr
 
 Gets the transformation that represents how to transform the camera back to the origin.
 The result of this is used in the vertex shader.
+
+---
+
+
+
+---
+
+# Game.TwoD.Shapes
+
+
+# Shapes for WebGL rendering.
+
+You don't need this module,
+unless you want to have a ready made square for a custom vertex shader.
+Since we're dealing with 2d only,
+the only available shape is a square
+
+```elm
+unitSquare : WebGL.Drawable Game.TwoD.Shapes.Vertex
+```
+
+A square with corners (0, 0), (1, 1)
+
+---
+
+
+```elm
+type alias Vertex = 
+  { a_position : Math.Vector2.Vec2 }
+```
+
+Just an alias for a 2d vector.
+Needs to be in a record because it will be passed as an
+attribute to the vertex shader
 
 ---
 

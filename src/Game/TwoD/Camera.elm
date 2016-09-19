@@ -4,7 +4,7 @@ module Game.TwoD.Camera exposing (Camera, init, getProjectionMatrix, withZoom, s
 This provides a basic camera.
 
 You don't have to use this functions to get a working camera,
-you can just fallow the `Camera` type.
+you can just follow the `Camera` type.
 
 E.g. in my game I have a camera that can follow the player and that does the right thing when the player dies etc.
 
