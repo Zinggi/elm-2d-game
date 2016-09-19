@@ -19,7 +19,7 @@ type alias Float3 =
 
 makeTransform : ( Float, Float, Float ) -> Float -> ( Float, Float ) -> ( Float, Float ) -> Mat4
 makeTransform ( x, y, z ) rotation ( w, h ) ( px, py ) =
-    (M4.makeTranslate ((vec3 x y z) `V3.add` (vec3 (w * px) (h * py) 0)))
+    (M4.makeTranslate ((vec3 x y z) `V3.add` (vec3 (abs w * px) (abs h * py) 0)))
         `M4.mul` (M4.makeRotate rotation (vec3 0 0 1))
         `M4.mul` (M4.makeScale (vec3 w h 1))
         `M4.mul` (M4.makeTranslate (vec3 -px -py 0))

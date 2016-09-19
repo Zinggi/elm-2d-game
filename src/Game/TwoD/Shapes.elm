@@ -1,14 +1,14 @@
-module Game.TwoD.Shapes exposing (unitQube, Vertex)
+module Game.TwoD.Shapes exposing (unitSquare, Vertex)
 
 {-|
 # Shapes for WebGL rendering.
 
 You don't need this module,
-unless you want to have a ready made qube for a custom vertex shader.
+unless you want to have a ready made square for a custom vertex shader.
 Since we're dealing with 2d only,
-the only available shape is a qube
+the only available shape is a square
 
-@docs unitQube
+@docs unitSquare
 
 @docs Vertex
 -}
@@ -27,10 +27,10 @@ type alias Vertex =
 
 
 {-|
-A qube with corners (0, 0), (1, 1)
+A square with corners (0, 0), (1, 1)
 -}
-unitQube : Drawable Vertex
-unitQube =
+unitSquare : Drawable Vertex
+unitSquare =
     WebGL.Triangle
         [ ( Vertex (vec2 0 0)
           , Vertex (vec2 0 1)

@@ -1,12 +1,18 @@
 {
-    "version": "1.0.0",
-    "summary": "helpful summary of your project, less than 80 characters",
+    "version": "0.0.1",
+    "summary": "A 2d rendering engine based on webgl",
     "repository": "https://github.com/user/project.git",
     "license": "BSD3",
     "source-directories": [
-        "."
+        "src"
     ],
-    "exposed-modules": [],
+    "exposed-modules": [
+        "Game.TwoD",
+        "Game.TwoD.Camera",
+        "Game.TwoD.Render",
+        "Game.TwoD.Shapes",
+        "Game.TwoD.Shaders"
+    ],
     "dependencies": {
         "elm-community/elm-linear-algebra": "2.0.3 <= v < 3.0.0",
         "elm-community/elm-webgl": "3.0.3 <= v < 4.0.0",

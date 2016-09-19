@@ -14,9 +14,8 @@ import Game.TwoD as Game
 
 
 type alias Model =
-    { camera : Camera {}
-    , time : Float
-    , m : ( ( Float, Float ), ( Float, Float ) )
+    { position : ( Float, Float )
+    , velocity : ( Float, Float )
     }
 
 
@@ -26,9 +25,8 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    { camera = Camera.init ( 0, 0 ) 15
-    , time = 0
-    , m = ( ( 0, 3 ), ( 0, 0 ) )
+    { position = ( 0, 3 )
+    , velocity = ( 0, 0 )
     }
         ! []
 
@@ -40,32 +38,31 @@ subs m =
 update msg model =
     case msg of
         Tick dt ->
-            tick (dt / 1000) { model | time = model.time + dt } ! []
+            tick (dt / 1000) model ! []
 
 
-tick dt ({ m } as model) =
+tick dt { position, velocity } =
     let
         ( ( x, y ), ( vx, vy ) ) =
-            m
+            ( position, velocity )
 
         vy' =
             vy - 9.81 * dt
 
-        newPos =
+        ( newP, newV ) =
             if y <= 0 then
-                ( ( x, y - vy' * dt ), ( 0, -vy' * 0.9 ) )
+                ( ( x, 0.00001 ), ( 0, -vy' * 0.9 ) )
             else
                 ( ( x, y + vy' * dt ), ( 0, vy' ) )
     in
-        { model | m = newPos }
+        Model newP newV
 
 
 view : Model -> Html Msg
 view m =
-    Game.renderCentered m.time
-        ( 800, 600 )
-        m.camera
-        [ Render.rectangle { color = Color.blue, position = fst m.m, size = ( 0.2, 0.2 ) }
+    Game.renderCentered { time = 0, camera = Camera.init ( 0, 1.5 ) 5, size = ( 800, 600 ) }
+        [ Render.rectangle { color = Color.blue, position = m.position, size = ( 0.2, 0.2 ) }
+        , Render.rectangle { color = Color.green, position = ( -10, -10 ), size = ( 20, 10 ) }
         ]
 
 

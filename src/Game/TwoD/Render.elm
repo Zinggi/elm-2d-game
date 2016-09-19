@@ -24,19 +24,30 @@ like simple sprites and sprite animations.
 It also provides colored recangels which can be great during prototyping.
 The simple rectangles can easily be replaced by nicer looking textures later.
 
-@docs Renderable
+suggested import:
+
+    import Game.TwoD.Render as Render exposing (Renderable)
+
 
 The functions to render something all come in 3 forms:
-rectange, rectange**Z**, rectangle**WithOptions**
+
+    thing, thingZ, thingWithOptions
+
 The first is the most common one where you can only specify
 the size, the position in 2d and the color.
 
+
 The second one is the same as the first, but with a 3d position.
 The z position goes from -1 to 1, everything outside this will be invisible.
-This can be used to put something in front or behind another regardless of the render order.
+This can be used to put something in front or behind regardless of the render order.
 
-The last one give you all possible options, e.g. the rotation
-, the pivot point of the rotation (normalized from 0 to 1)
+
+The last one gives you all possible options, e.g. the rotation
+, the pivot point of the rotation (normalized from 0 to 1), etc.
+
+TODO: insert picture to visualize coordinate system.
+
+@docs Renderable
 
 ## Rectangles
 @docs rectangle
@@ -44,6 +55,19 @@ The last one give you all possible options, e.g. the rotation
 @docs rectangleWithOptions
 
 ### With texture
+
+Textures are `Maybe` values because you can never have a texture at the start of your game.
+You first have to load your textures. In case you pass a `Nothing` as a value for a texture,
+A gray rectangle will be displayed instead.
+
+For loading textures I suggest keeping a dictionary of textures and then use your textures
+by calling `Dict.get "textureId" model.textures` as this already returns a Maybe value
+, making it a perfect fit to pass for the texture parameter.
+
+**NOTE**: Texture dimensions have to be in a power of 2, e.g. 2^n x 2^m, like 4x16, 16x16, 512x256, etc.
+If you try to use a non power of two texture, WebGL will spitt out a bunch of warnings and display a black rectangle.
+
+
 @docs sprite
 @docs spriteZ
 @docs spriteWithOptions
@@ -56,7 +80,7 @@ The last one give you all possible options, e.g. the rotation
 ## Custom
 These are usefull if you want to write your own GLSL shaders.
 When writing your own shaders, you might want to look at
-Game.TwoD.Shaders and Game.TwoD.Shapes that you can reuse.
+Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 
 
 @docs customFragment
@@ -71,13 +95,13 @@ import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 exposing (Vec2, vec2)
 import Math.Vector3 exposing (Vec3)
 import Game.TwoD.Shaders exposing (..)
-import Game.TwoD.Shapes exposing (unitQube)
+import Game.TwoD.Shapes exposing (unitSquare)
 import Game.Helpers exposing (..)
 
 
 {-|
 A representation of something that can be rendered.
-To actually render a Renderable onto a webpage use the Game.TwoD.* functions
+To actually render a `Renderable` onto a webpage use the `Game.TwoD.*` functions
 -}
 type Renderable
     = ColoredRectangle { transform : Mat4, color : Vec3 }
@@ -87,8 +111,7 @@ type Renderable
 
 
 {-|
-Just an alias for this crazy function, needed when you want to use
-@docs customFragment
+Just an alias for this crazy function, needed when you want to use customFragment
 -}
 type alias MakeUniformsFunc a =
     { cameraProj : Mat4, time : Float, transform : Mat4 }
@@ -96,7 +119,7 @@ type alias MakeUniformsFunc a =
 
 
 {-|
-Converts a @docs Renderable to a @docs WebGL.Renderable.
+Converts a Renderable to a WebGL.Renderable.
 
     toWebGl time cameraProj renderable
 -}
@@ -106,19 +129,19 @@ toWebGl time cameraProj object =
         ColoredRectangle { transform, color } ->
             WebGL.render vertColoredRect
                 fragUniColor
-                unitQube
+                unitSquare
                 { transform = transform, color = color, cameraProj = cameraProj }
 
         TexturedRectangle { transform, texture, tileWH } ->
             WebGL.render vertTexturedRect
                 fragTextured
-                unitQube
+                unitSquare
                 { transform = transform, texture = texture, cameraProj = cameraProj, tileWH = tileWH }
 
         AnimatedSprite { transform, texture, bottomLeft, topRight, duration, numberOfFrames } ->
             WebGL.render vertTexturedRect
                 fragAnimTextured
-                unitQube
+                unitSquare
                 { transform = transform, texture = texture, cameraProj = cameraProj, bottomLeft = bottomLeft, topRight = topRight, duration = duration, time = time, numberOfFrames = numberOfFrames }
 
         Custom f ->
@@ -126,7 +149,7 @@ toWebGl time cameraProj object =
 
 
 {-|
-A colored rectangle, grate for prototyping
+A colored rectangle, great for prototyping
 -}
 rectangle : { o | color : Color, position : Float2, size : Float2 } -> Renderable
 rectangle { size, position, color } =
@@ -189,7 +212,8 @@ A sprite with tiling and rotation.
 
     spriteWithOptions {config | tiling = (3,5)}
 
-will create a sprite with a texture that reapeats itself 3 time horizontally and 5 times vertically
+will create a sprite with a texture that reapeats itself 3 times horizontally and 5 times vertically.
+TODO: picture!
 -}
 spriteWithOptions :
     { o | texture : Maybe Texture, position : Float3, size : Float2, tiling : Float2, rotation : Float, pivot : Float2 }
@@ -214,6 +238,8 @@ spriteWithOptions ({ texture, position, size, tiling, rotation, pivot } as args)
 {-|
 An animated sprite. `bottomLeft` and `topRight` define a sub area from a texture
 where the animation frames are located. It's a normalized coordinate from 0 to 1.
+
+TODO: picture!
 -}
 animatedSprite :
     { o
@@ -293,15 +319,15 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
                     , bottomLeft = vec2 blx bly
                     , topRight = vec2 trx try
                     , duration = duration
-                    , numberOfFrames = 6
+                    , numberOfFrames = numberOfFrames
                     }
 
 
 {-|
 This allows you to write your own custom fragment shader.
 The type signature may look terrifying,
-but this is still easier than using @docs veryCustom or using WebGL directely.
-It handles the vertex shader for you, e.g. your object will apprear at the expected location once rendered.
+but this is still easier than using veryCustom or using WebGL directely.
+It handles the vertex shader for you, e.g. your object will appear at the expected location once rendered.
 
 For the fragment shader, you have the `vec2 varying vcoord;` variable available,
 which can be used to sample a texture (`texture2D(texture, vcoord);`)
@@ -349,7 +375,7 @@ customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } 
             (\{ cameraProj, time } ->
                 WebGL.render vertTexturedRect
                     fragmentShader
-                    unitQube
+                    unitSquare
                     (makeUniforms
                         { transform = makeTransform ( x, y, z ) (rotation) ( w, h ) ( px, py )
                         , cameraProj = cameraProj
@@ -360,13 +386,19 @@ customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } 
 
 
 {-|
-This allows you to use the WebGL library directely.
-If you find yourself using this all the time, you might be better off using WebGL directely.
+This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directely.
+If you use this you have to calculate your transformtions yourself.
 
-If you need a quad, you can take the one from @docs Game.TwoD.Shapes
+If you need a quad as attributes, you can take the one from Game.TwoD.Shapes
+
+TODO: Expose make transform
 
     veryCustom (\{cameraProj, time} ->
-        WebGL.render vert frag Shapes.unitQube {u_crazyFrog=frogTexture}
+        WebGL.render vert frag Shapes.unitSquare
+          { u_crazyFrog=frogTexture
+          , transform=transform
+          , camera=cameraProj
+          }
     )
 -}
 veryCustom : ({ cameraProj : Mat4, time : Float } -> WebGL.Renderable) -> Renderable

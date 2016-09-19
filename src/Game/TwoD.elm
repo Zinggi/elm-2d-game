@@ -4,6 +4,7 @@ module Game.TwoD
         , renderWithOptions
         , renderCentered
         , renderCenteredWithOptions
+        , RenderConfig
         )
 
 {-|
@@ -11,6 +12,12 @@ A set of functions used to embed a 2d game into a webpage.
 These functions specify the size and attributes passed to the canvas element.
 
 You need to pass along the time, size and camera, as these are needed for rendering.
+
+suggested import:
+
+    import Game.TwoD as Game
+
+@docs RenderConfig
 
 ## Canvas element only
 @docs render
@@ -35,24 +42,43 @@ import Game.TwoD.Camera as Camera exposing (Camera)
 
 
 {-|
-Creates a canvas element that renders the given renderables
+This is used by all the functions below, it represents all the shared state needed to render stuff.
+If you don't use sprite animations you can use `0` for the time parameter.
+-}
+type alias RenderConfig a =
+    { time : Float, size : Int2, camera : Camera a }
 
-    render time (800, 600) state.camera
+
+{-|
+Creates a canvas element that renders the given renderables.
+
+If you don't use animated sprites, you can use `0` for the time parameter.
+
+    render { time = time, size = (800, 600), camera = state.camera }
         [ Background.render
         , Player.render state.Player
         ]
 -}
-render : Float -> ( Int, Int ) -> Camera a -> List Renderable -> Html x
+render : RenderConfig a -> List Renderable -> Html x
 render =
     renderWithOptions []
 
 
 {-|
-Same as above, but you can specify additional attributes that will be passed to the canvas element
+Same as above, but you can specify additional attributes that will be passed to the canvas element.
+A usefull trick to save some gpu processing at the cost of image quality is
+to use a smaller `size` argument and than scale the canvas with css. e.g.
+
+    renderWithOptions [style [("width", "800px"), ("height", "600px")]]
+        { time = time, size = (400, 300), camera = camera }
+        (World.render model.world)
 -}
-renderWithOptions : List (Attribute msg) -> Float -> Int2 -> Camera a -> List Renderable -> Html msg
-renderWithOptions attributes time ( w, h ) camera objects =
+renderWithOptions : List (Attribute msg) -> RenderConfig a -> List Renderable -> Html msg
+renderWithOptions attributes { time, size, camera } objects =
     let
+        ( w, h ) =
+            size
+
         cameraProj =
             (Camera.getProjectionMatrix ( toFloat w, toFloat h ) camera)
     in
@@ -66,9 +92,9 @@ renderWithOptions attributes time ( w, h ) camera objects =
 
 
 {-|
-Same as above, but wrapped in a div and nicely centered on the page using flexbox
+Same as `render`, but wrapped in a div and nicely centered on the page using flexbox
 -}
-renderCentered : Float -> ( Int, Int ) -> Camera a -> List Renderable -> Html x
+renderCentered : RenderConfig a -> List Renderable -> Html x
 renderCentered =
     renderCenteredWithOptions [] []
 
@@ -77,17 +103,18 @@ renderCentered =
 Same as above, but you can specify attributes for the container div and the canvas.
 
     renderCenteredWithOptions
-        containerAttributes canvasAttributes time dimensions camera renderables
+        containerAttributes
+        canvasAttributes
+        renderConfig
+        renderables
 -}
 renderCenteredWithOptions :
     List (Attribute msg)
     -> List (Attribute msg)
-    -> Float
-    -> Int2
-    -> Camera a
+    -> RenderConfig a
     -> List Renderable
     -> Html msg
-renderCenteredWithOptions containerAttributes canvasAttributes time dimensions camera objects =
+renderCenteredWithOptions containerAttributes canvasAttributes renderConfig objects =
     Html.div
         ([ Attr.style
             [ ( "width", "100%" )
@@ -99,7 +126,7 @@ renderCenteredWithOptions containerAttributes canvasAttributes time dimensions c
          ]
             ++ containerAttributes
         )
-        [ renderWithOptions canvasAttributes time dimensions camera objects ]
+        [ renderWithOptions canvasAttributes renderConfig objects ]
 
 
 makeTransform : Float3 -> Float -> Float2 -> Float2 -> Mat4

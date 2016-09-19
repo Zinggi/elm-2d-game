@@ -69,7 +69,7 @@ void main () {
 
 {-|
 A shader to render spritesheet animations.
-It assumes that the animation frames are in one stripe
+It assumes that the animation frames are in one horizontal line
 -}
 fragAnimTextured : Shader {} { u | texture : Texture, bottomLeft : Vec2, topRight : Vec2, numberOfFrames : Int, duration : Float, time : Float } { vcoord : Vec2 }
 fragAnimTextured =
@@ -90,9 +90,9 @@ void main () {
     float framePos = floor((mod(time, duration) / duration) * n );
     vec2 stripSize = topRight - bottomLeft;
     vec2 frameSize = vec2(stripSize.x / n, stripSize.y);
-    vec2 texCord = bottomLeft + vec2(frameSize.x * framePos, 0) + vcoord * frameSize;
+    vec2 texCoord = bottomLeft + vec2(frameSize.x * framePos, 0) + vcoord * frameSize;
 
-    gl_FragColor = texture2D(texture, texCord);
+    gl_FragColor = texture2D(texture, texCoord.xy);
 }
 |]
 
