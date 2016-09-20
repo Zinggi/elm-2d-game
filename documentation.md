@@ -1,7 +1,7 @@
 # Game.TwoD
 
 
-A set of functions used to embed a 2d game into a webpage.
+A set of functions used to embed a 2d game into a web page.
 These functions specify the size and attributes passed to the canvas element.
 
 You need to pass along the time, size and camera, as these are needed for rendering.
@@ -26,7 +26,7 @@ If you don't use sprite animations you can use `0` for the time parameter.
 render : Game.TwoD.RenderConfig a -> List Game.TwoD.Render.Renderable -> Html.Html x
 ```
 
-Creates a canvas element that renders the given renderables.
+Creates a canvas element that renders the given Renderables.
 
 If you don't use animated sprites, you can use `0` for the time parameter.
 
@@ -45,7 +45,7 @@ renderWithOptions : List (Html.Attribute msg)
 ```
 
 Same as above, but you can specify additional attributes that will be passed to the canvas element.
-A usefull trick to save some gpu processing at the cost of image quality is
+A useful trick to save some gpu processing at the cost of image quality is
 to use a smaller `size` argument and than scale the canvas with css. e.g.
 
     renderWithOptions [style [("width", "800px"), ("height", "600px")]]
@@ -93,7 +93,7 @@ Same as above, but you can specify attributes for the container div and the canv
 This module provides a way to render commonly used objects in 2d games
 like simple sprites and sprite animations.
 
-It also provides colored recangels which can be great during prototyping.
+It also provides colored rectangles which can be great during prototyping.
 The simple rectangles can easily be replaced by nicer looking textures later.
 
 suggested import:
@@ -125,7 +125,7 @@ type Renderable
 ```
 
 A representation of something that can be rendered.
-To actually render a `Renderable` onto a webpage use the `Game.TwoD.*` functions
+To actually render a `Renderable` onto a web page use the `Game.TwoD.*` functions
 
 ---
 
@@ -170,7 +170,7 @@ by calling `Dict.get "textureId" model.textures` as this already returns a Maybe
 , making it a perfect fit to pass for the texture parameter.
 
 **NOTE**: Texture dimensions have to be in a power of 2, e.g. 2^n x 2^m, like 4x16, 16x16, 512x256, etc.
-If you try to use a non power of two texture, WebGL will spitt out a bunch of warnings and display a black rectangle.
+If you try to use a non power of two texture, WebGL will spit out a bunch of warnings and display a black rectangle.
 
 
 ```elm
@@ -200,7 +200,7 @@ A sprite with tiling and rotation.
 
     spriteWithOptions {config | tiling = (3,5)}
 
-will create a sprite with a texture that reapeats itself 3 times horizontally and 5 times vertically.
+will create a sprite with a texture that repeats itself 3 times horizontally and 5 times vertically.
 TODO: picture!
 
 ---
@@ -239,7 +239,7 @@ the same with rotation
 
 
 ## Custom
-These are usefull if you want to write your own GLSL shaders.
+These are useful if you want to write your own GLSL shaders.
 When writing your own shaders, you might want to look at
 Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 
@@ -252,7 +252,7 @@ customFragment : Game.TwoD.Render.MakeUniformsFunc u
 
 This allows you to write your own custom fragment shader.
 The type signature may look terrifying,
-but this is still easier than using veryCustom or using WebGL directely.
+but this is still easier than using veryCustom or using WebGL directly.
 It handles the vertex shader for you, e.g. your object will appear at the expected location once rendered.
 
 For the fragment shader, you have the `vec2 varying vcoord;` variable available,
@@ -296,8 +296,8 @@ Just an alias for this crazy function, needed when you want to use customFragmen
 veryCustom : ({ cameraProj : Math.Matrix4.Mat4, time : Float } -> WebGL.Renderable) -> Game.TwoD.Render.Renderable
 ```
 
-This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directely.
-If you use this you have to calculate your transformtions yourself.
+This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directly.
+If you use this you have to calculate your transformations yourself.
 
 If you need a quad as attributes, you can take the one from Game.TwoD.Shapes
 
@@ -339,7 +339,7 @@ You don't need this module,
 unless you want to write your own vertex or fragment shader
 and a shader from here already provides one half.
 
-Or if you're using WebGL directely.
+Or if you're using WebGL directly.
 
 ## Vertex shaders
 ```elm
@@ -368,7 +368,7 @@ fragTextured : WebGL.Shader {} { u | texture : WebGL.Texture, tileWH : Math.Vect
 ```
 
 Display a tiled texture.
-TileWH specifys how many times the texture should be tiled.
+TileWH specifies how many times the texture should be tiled.
 
 ---
 
@@ -386,6 +386,40 @@ fragUniColor : WebGL.Shader {} { u | color : Math.Vector3.Vec3 } {}
 ```
 
 A very simple shader, coloring the whole area in a single color
+
+---
+
+
+
+---
+
+# Game.TwoD.Shapes
+
+
+# Shapes for WebGL rendering.
+
+You don't need this module,
+unless you want to have a ready made square for a custom vertex shader.
+Since we're dealing with 2d only,
+the only available shape is a square
+
+```elm
+unitSquare : WebGL.Drawable Game.TwoD.Shapes.Vertex
+```
+
+A square with corners (0, 0), (1, 1)
+
+---
+
+
+```elm
+type alias Vertex = 
+  { a_position : Math.Vector2.Vec2 }
+```
+
+Just an alias for a 2d vector.
+Needs to be in a record because it will be passed as an
+attribute to the vertex shader
 
 ---
 
@@ -448,7 +482,7 @@ follow : Float
     -> Game.TwoD.Camera.Camera a
 ```
 
-Smoothely follow the given target. Use this in your tick function.
+Smoothly follow the given target. Use this in your tick function.
 
     follow 1.5 dt target camera
 
@@ -491,40 +525,6 @@ getProjectionMatrix : ( Float, Float ) -> Game.TwoD.Camera.Camera a -> Math.Matr
 
 Gets the transformation that represents how to transform the camera back to the origin.
 The result of this is used in the vertex shader.
-
----
-
-
-
----
-
-# Game.TwoD.Shapes
-
-
-# Shapes for WebGL rendering.
-
-You don't need this module,
-unless you want to have a ready made square for a custom vertex shader.
-Since we're dealing with 2d only,
-the only available shape is a square
-
-```elm
-unitSquare : WebGL.Drawable Game.TwoD.Shapes.Vertex
-```
-
-A square with corners (0, 0), (1, 1)
-
----
-
-
-```elm
-type alias Vertex = 
-  { a_position : Math.Vector2.Vec2 }
-```
-
-Just an alias for a 2d vector.
-Needs to be in a record because it will be passed as an
-attribute to the vertex shader
 
 ---
 

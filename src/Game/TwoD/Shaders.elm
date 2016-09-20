@@ -7,7 +7,7 @@ You don't need this module,
 unless you want to write your own vertex or fragment shader
 and a shader from here already provides one half.
 
-Or if you're using WebGL directely.
+Or if you're using WebGL directly.
 
 ## Vertex shaders
 @docs vertColoredRect
@@ -49,7 +49,7 @@ void main () {
 
 {-|
 Display a tiled texture.
-TileWH specifys how many times the texture should be tiled.
+TileWH specifies how many times the texture should be tiled.
 -}
 fragTextured : Shader {} { u | texture : Texture, tileWH : Vec2 } { vcoord : Vec2 }
 fragTextured =

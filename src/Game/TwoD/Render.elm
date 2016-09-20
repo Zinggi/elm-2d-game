@@ -21,7 +21,7 @@ module Game.TwoD.Render
 This module provides a way to render commonly used objects in 2d games
 like simple sprites and sprite animations.
 
-It also provides colored recangels which can be great during prototyping.
+It also provides colored rectangles which can be great during prototyping.
 The simple rectangles can easily be replaced by nicer looking textures later.
 
 suggested import:
@@ -65,7 +65,7 @@ by calling `Dict.get "textureId" model.textures` as this already returns a Maybe
 , making it a perfect fit to pass for the texture parameter.
 
 **NOTE**: Texture dimensions have to be in a power of 2, e.g. 2^n x 2^m, like 4x16, 16x16, 512x256, etc.
-If you try to use a non power of two texture, WebGL will spitt out a bunch of warnings and display a black rectangle.
+If you try to use a non power of two texture, WebGL will spit out a bunch of warnings and display a black rectangle.
 
 
 @docs sprite
@@ -78,7 +78,7 @@ If you try to use a non power of two texture, WebGL will spitt out a bunch of wa
 @docs animatedSpriteWithOptions
 
 ## Custom
-These are usefull if you want to write your own GLSL shaders.
+These are useful if you want to write your own GLSL shaders.
 When writing your own shaders, you might want to look at
 Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 
@@ -101,7 +101,7 @@ import Game.Helpers exposing (..)
 
 {-|
 A representation of something that can be rendered.
-To actually render a `Renderable` onto a webpage use the `Game.TwoD.*` functions
+To actually render a `Renderable` onto a web page use the `Game.TwoD.*` functions
 -}
 type Renderable
     = ColoredRectangle { transform : Mat4, color : Vec3 }
@@ -212,7 +212,7 @@ A sprite with tiling and rotation.
 
     spriteWithOptions {config | tiling = (3,5)}
 
-will create a sprite with a texture that reapeats itself 3 times horizontally and 5 times vertically.
+will create a sprite with a texture that repeats itself 3 times horizontally and 5 times vertically.
 TODO: picture!
 -}
 spriteWithOptions :
@@ -326,7 +326,7 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
 {-|
 This allows you to write your own custom fragment shader.
 The type signature may look terrifying,
-but this is still easier than using veryCustom or using WebGL directely.
+but this is still easier than using veryCustom or using WebGL directly.
 It handles the vertex shader for you, e.g. your object will appear at the expected location once rendered.
 
 For the fragment shader, you have the `vec2 varying vcoord;` variable available,
@@ -386,8 +386,8 @@ customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } 
 
 
 {-|
-This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directely.
-If you use this you have to calculate your transformtions yourself.
+This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directly.
+If you use this you have to calculate your transformations yourself.
 
 If you need a quad as attributes, you can take the one from Game.TwoD.Shapes
 

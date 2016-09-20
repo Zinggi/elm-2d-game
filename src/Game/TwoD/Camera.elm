@@ -94,7 +94,7 @@ moveTo ( x, y ) camera =
 
 
 {-|
-Smoothely follow the given target. Use this in your tick function.
+Smoothly follow the given target. Use this in your tick function.
 
     follow 1.5 dt target camera
 

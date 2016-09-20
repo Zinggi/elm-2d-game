@@ -8,7 +8,7 @@ module Game.TwoD
         )
 
 {-|
-A set of functions used to embed a 2d game into a webpage.
+A set of functions used to embed a 2d game into a web page.
 These functions specify the size and attributes passed to the canvas element.
 
 You need to pass along the time, size and camera, as these are needed for rendering.
@@ -50,7 +50,7 @@ type alias RenderConfig a =
 
 
 {-|
-Creates a canvas element that renders the given renderables.
+Creates a canvas element that renders the given Renderables.
 
 If you don't use animated sprites, you can use `0` for the time parameter.
 
@@ -66,7 +66,7 @@ render =
 
 {-|
 Same as above, but you can specify additional attributes that will be passed to the canvas element.
-A usefull trick to save some gpu processing at the cost of image quality is
+A useful trick to save some gpu processing at the cost of image quality is
 to use a smaller `size` argument and than scale the canvas with css. e.g.
 
     renderWithOptions [style [("width", "800px"), ("height", "600px")]]
