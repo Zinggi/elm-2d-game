@@ -1,4 +1,4 @@
-module Game.TwoD.Camera exposing (Camera, init, getProjectionMatrix, withZoom, setZoom, getZoom, follow, moveBy, moveTo)
+module Game.TwoD.Camera exposing (Camera, init, getProjectionMatrix, getPosition, withZoom, setZoom, getZoom, follow, moveBy, moveTo)
 
 {-|
 This provides a basic camera.
@@ -11,6 +11,8 @@ E.g. in my game I have a camera that can follow the player and that does the rig
 @docs Camera
 
 @docs init
+
+@docs getPosition
 
 @docs moveBy
 
@@ -67,6 +69,13 @@ getProjectionMatrix ( w, h ) { position, width } =
             ( x - w, x + w, y - h, y + h )
     in
         makeOrtho2D l r d u
+
+
+{-|
+-}
+getPosition : Camera a -> ( Float, Float )
+getPosition camera =
+    toTuple camera.position
 
 
 {-|

@@ -15,6 +15,7 @@ import AnimationFrame
 import Game.TwoD.Camera as Camera exposing (Camera)
 import Game.TwoD.Render as Render
 import Game.TwoD as Game
+import Helpers exposing (..)
 
 
 type alias Model =
@@ -30,25 +31,13 @@ type Msg
     | FailedToLoadTexture String
 
 
-loadTextures : List String -> Cmd Msg
-loadTextures urls =
-    urls
-        |> List.map
-            (\url ->
-                Task.perform (\_ -> FailedToLoadTexture url)
-                    (LoadTexture url)
-                    (WebGL.loadTexture url)
-            )
-        |> Cmd.batch
-
-
 init : ( Model, Cmd Msg )
 init =
     { camera = Camera.init ( 1, 1 ) 10
     , textures = Dict.empty
     , time = 0
     }
-        ! [ loadTextures [ "images/box.png", "images/guy.png" ] ]
+        ! [ loadTextures FailedToLoadTexture LoadTexture [ "images/box.png", "images/guy.png" ] ]
 
 
 subs m =
