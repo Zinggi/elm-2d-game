@@ -82,13 +82,14 @@ renderWithOptions attributes { time, size, camera } objects =
         cameraProj =
             (Camera.getProjectionMatrix ( toFloat w, toFloat h ) camera)
     in
-        WebGL.toHtml
+        WebGL.toHtmlWith
+            [ WebGL.Enable WebGL.Blend, WebGL.Enable WebGL.DepthTest, WebGL.BlendFunc ( WebGL.One, WebGL.OneMinusSrcAlpha ) ]
             ([ Attr.width w
              , Attr.height h
              ]
                 ++ attributes
             )
-            (List.map (Render.toWebGl time cameraProj) objects)
+            (List.reverse (List.map (Render.toWebGl time cameraProj) objects))
 
 
 {-|

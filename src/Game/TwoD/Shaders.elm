@@ -62,7 +62,8 @@ uniform vec2 tileWH;
 varying vec2 vcoord;
 
 void main () {
-  gl_FragColor = texture2D(texture, vcoord*tileWH);
+    vec4 temp = texture2D(texture, vcoord*tileWH);
+    gl_FragColor = vec4(temp.xyz*temp.a, temp.a);
 }
 |]
 
@@ -92,7 +93,8 @@ void main () {
     vec2 frameSize = vec2(stripSize.x / n, stripSize.y);
     vec2 texCoord = bottomLeft + vec2(frameSize.x * framePos, 0) + vcoord * frameSize;
 
-    gl_FragColor = texture2D(texture, texCoord.xy);
+    vec4 temp = texture2D(texture, texCoord.xy);
+    gl_FragColor = vec4(temp.xyz*temp.a, temp.a);
 }
 |]
 
@@ -112,9 +114,7 @@ uniform mat4 transform;
 uniform mat4 cameraProj;
 
 void main() {
-
-    vec4 pos = cameraProj*transform*vec4(a_position, 0, 1);
-    gl_Position = pos;
+    gl_Position = cameraProj*transform*vec4(a_position, 0, 1);
 }
 |]
 

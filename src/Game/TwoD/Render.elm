@@ -148,6 +148,12 @@ toWebGl time cameraProj object =
             f { cameraProj = cameraProj, time = time }
 
 
+
+--renderTransparent =
+--WebGL.renderWithConfig [ WebGL.Enable WebGL.Blend, WebGL.BlendFunc ( WebGL.One, WebGL.OneMinusSrcAlpha ) ]
+--WebGL.renderWithConfig [ WebGL.Enable WebGL.Blend, WebGL.BlendFunc ( WebGL.SrcAlpha, WebGL.OneMinusSrcAlpha ) ]
+
+
 {-|
 A colored rectangle, great for prototyping
 -}

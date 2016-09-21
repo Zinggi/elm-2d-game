@@ -1,6 +1,7 @@
 module MarioLike exposing (..)
 
-import Html exposing (Html)
+import Html exposing (Html, div)
+import Html.Attributes as Attr
 import Html.App as App
 import Task
 import Color
@@ -215,8 +216,8 @@ renderBackground camera =
         ( x, y ) =
             Camera.getPosition camera
     in
-        Render.rectangle
-            { position = ( x - 25, y - 25 )
+        Render.rectangleZ
+            { position = ( x - 25, y - 25, -0.1 )
             , size = ( 50, 50 )
             , color = Color.rgb 174 238 238
             }
@@ -246,12 +247,14 @@ renderMario textures { x, y, dir } =
 
 view : Model -> Html msg
 view ({ time, screen } as model) =
-    Game.render
-        { camera = model.camera
-        , time = time
-        , size = screen
-        }
-        (render model)
+    div [ Attr.style [ ( "overflow", "hidden" ), ( "width", "100%" ), ( "height", "100%" ) ] ]
+        [ Game.render
+            { camera = model.camera
+            , time = time
+            , size = screen
+            }
+            (render model)
+        ]
 
 
 main : Program Never
