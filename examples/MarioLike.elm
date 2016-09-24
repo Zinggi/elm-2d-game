@@ -97,7 +97,7 @@ init =
         , camera = Camera.init ( 0, 0 ) 11
         }
             ! [ getScreenSize
-              , loadTextures FailedToLoadTexture LoadTexture [ "images/guy.png", "images/grass.png" ]
+              , loadTextures FailedToLoadTexture LoadTexture [ "images/guy.png", "images/grass.png", "images/cloud_bg.png" ]
               , Cmd.map Keys cmd
               ]
 
@@ -198,29 +198,48 @@ walk keys mario =
 
 render : Model -> List Renderable
 render { mario, textures, camera } =
-    [ renderBackground camera
-    , Render.spriteWithOptions
-        { position = ( -10, -10, 0 )
-        , size = ( 20, 10 )
-        , texture = Dict.get "images/grass.png" textures
-        , rotation = 0
-        , pivot = ( 0, 0 )
-        , tiling = ( 10, 5 )
+    List.concat
+        [ renderBackground textures
+        , [ Render.spriteWithOptions
+                { position = ( -10, -10, 0 )
+                , size = ( 20, 10 )
+                , texture = Dict.get "images/grass.png" textures
+                , rotation = 0
+                , pivot = ( 0, 0 )
+                , tiling = ( 10, 5 )
+                }
+          , renderMario textures mario
+          ]
+        ]
+
+
+renderBackground textures =
+    [ Render.parallaxScroll
+        { z = -0.99
+        , texture = Dict.get "images/cloud_bg.png" textures
+        , tileWH = ( 1, 1 )
+        , scrollSpeed = 0.1
         }
-    , renderMario textures mario
+    , Render.parallaxScroll
+        { z = -0.98
+        , texture = Dict.get "images/cloud_bg.png" textures
+        , tileWH = ( 1.4, 1.4 )
+        , scrollSpeed = 0.2
+        }
     ]
 
 
-renderBackground camera =
-    let
-        ( x, y ) =
-            Camera.getPosition camera
-    in
-        Render.rectangleZ
-            { position = ( x - 25, y - 25, -0.1 )
-            , size = ( 50, 50 )
-            , color = Color.rgb 174 238 238
-            }
+
+--renderBackground camera =
+--    let
+--        ( x, y ) =
+--            Camera.getPosition camera
+--    in
+--        Render.rectangleZ
+--            { position = ( x - 25, y - 25, -0.1 )
+--            , size = ( 50, 50 )
+--            , color = Color.rgb 174 238 238
+--            }
 
 
 renderMario : Dict String Texture -> Mario -> Renderable

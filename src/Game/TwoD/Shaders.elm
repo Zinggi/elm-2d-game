@@ -12,6 +12,7 @@ Or if you're using WebGL directly.
 ## Vertex shaders
 @docs vertColoredRect
 @docs vertTexturedRect
+@docs vertParallaxScroll
 
 ## Fragment shaders
 @docs fragTextured
@@ -132,5 +133,29 @@ uniform vec3 color;
 
 void main() {
     gl_FragColor = vec4(color, 1);
+}
+|]
+
+
+{-|
+A shader that scrolls it's texture when the camera moves, but at not at the same speed.
+Good for background images.
+-}
+vertParallaxScroll : Shader Vertex { u | cameraProj : Mat4, scrollSpeed : Float, z : Float } { vcoord : Vec2 }
+vertParallaxScroll =
+    [glsl|
+attribute vec2 a_position;
+uniform mat4 cameraProj;
+uniform float scrollSpeed;
+uniform float z;
+varying vec2 vcoord;
+
+void main()
+{
+    vec2 xy_size = 0.25/vec2(cameraProj[0][0], cameraProj[1][1]);
+    vec2 cameraPos = vec2(cameraProj[3][0], cameraProj[3][1]);
+
+    vcoord = a_position*xy_size - xy_size/2.0 - cameraPos*scrollSpeed;
+    gl_Position = vec4(a_position*2.0 - vec2(1.0, 1.0), -z, 1);
 }
 |]
