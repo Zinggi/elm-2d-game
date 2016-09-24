@@ -238,6 +238,18 @@ the same with rotation
 ---
 
 
+### Background
+```elm
+parallaxScroll : { o | scrollSpeed : Float, z : Float, tileWH : Game.Helpers.Float2, texture : Maybe.Maybe WebGL.Texture }
+    -> Game.TwoD.Render.Renderable
+```
+
+Used for scrolling backgrounds.
+A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
+
+---
+
+
 ## Custom
 These are useful if you want to write your own GLSL shaders.
 When writing your own shaders, you might want to look at
@@ -361,6 +373,15 @@ Can be generally used if the fragment shader needs to display texture(s).
 
 ---
 
+```elm
+vertParallaxScroll : WebGL.Shader Game.TwoD.Shapes.Vertex { u | cameraProj : Math.Matrix4.Mat4, scrollSpeed : Float, z : Float } { vcoord : Math.Vector2.Vec2 }
+```
+
+A shader that scrolls it's texture when the camera moves, but at not at the same speed.
+Good for background images.
+
+---
+
 
 ## Fragment shaders
 ```elm
@@ -453,6 +474,15 @@ init : ( Float, Float ) -> Float -> Game.TwoD.Camera.Camera {}
 ```
 
 Create a simple camera.
+
+---
+
+
+```elm
+getPosition : Game.TwoD.Camera.Camera a -> ( Float, Float )
+```
+
+
 
 ---
 
