@@ -141,12 +141,12 @@ void main() {
 A shader that scrolls it's texture when the camera moves, but at not at the same speed.
 Good for background images.
 -}
-vertParallaxScroll : Shader Vertex { u | cameraProj : Mat4, scrollSpeed : Float, z : Float } { vcoord : Vec2 }
+vertParallaxScroll : Shader Vertex { u | cameraProj : Mat4, scrollSpeed : Vec2, z : Float } { vcoord : Vec2 }
 vertParallaxScroll =
     [glsl|
 attribute vec2 a_position;
 uniform mat4 cameraProj;
-uniform float scrollSpeed;
+uniform vec2 scrollSpeed;
 uniform float z;
 varying vec2 vcoord;
 

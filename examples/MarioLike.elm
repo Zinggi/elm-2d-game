@@ -218,13 +218,13 @@ renderBackground textures =
         { z = -0.99
         , texture = Dict.get "images/cloud_bg.png" textures
         , tileWH = ( 1, 1 )
-        , scrollSpeed = 0.1
+        , scrollSpeed = ( 0.1, 0 )
         }
     , Render.parallaxScroll
         { z = -0.98
         , texture = Dict.get "images/cloud_bg.png" textures
         , tileWH = ( 1.4, 1.4 )
-        , scrollSpeed = 0.2
+        , scrollSpeed = ( 0.2, 0.1 )
         }
     ]
 

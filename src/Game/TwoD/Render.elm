@@ -96,8 +96,8 @@ Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 import Color exposing (Color)
 import WebGL exposing (Texture)
 import Math.Matrix4 exposing (Mat4)
-import Math.Vector2 exposing (Vec2, vec2)
-import Math.Vector3 exposing (Vec3)
+import Math.Vector2 as V2 exposing (Vec2, vec2)
+import Math.Vector3 as V3 exposing (Vec3)
 import Game.TwoD.Shaders exposing (..)
 import Game.TwoD.Shapes exposing (unitSquare)
 import Game.Helpers exposing (..)
@@ -111,7 +111,7 @@ type Renderable
     = ColoredRectangle { transform : Mat4, color : Vec3 }
     | TexturedRectangle { transform : Mat4, texture : Texture, tileWH : Vec2 }
     | AnimatedSprite { transform : Mat4, texture : Texture, bottomLeft : Vec2, topRight : Vec2, duration : Float, numberOfFrames : Int }
-    | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Float, z : Float }
+    | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec2, z : Float }
     | Custom ({ cameraProj : Mat4, time : Float } -> WebGL.Renderable)
 
 
@@ -344,7 +344,7 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
 Used for scrolling backgrounds.
 A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
 -}
-parallaxScroll : { o | scrollSpeed : Float, z : Float, tileWH : Float2, texture : Maybe Texture } -> Renderable
+parallaxScroll : { o | scrollSpeed : Float2, z : Float, tileWH : Float2, texture : Maybe Texture } -> Renderable
 parallaxScroll { scrollSpeed, tileWH, texture, z } =
     case texture of
         Nothing ->
@@ -352,9 +352,9 @@ parallaxScroll { scrollSpeed, tileWH, texture, z } =
 
         Just t ->
             ParallaxScroll
-                { scrollSpeed = scrollSpeed
+                { scrollSpeed = V2.fromTuple scrollSpeed
                 , z = z
-                , tileWH = tileWH |> (\( w, h ) -> vec2 w h)
+                , tileWH = V2.fromTuple tileWH
                 , texture = t
                 }
 
