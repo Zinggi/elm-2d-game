@@ -155,7 +155,12 @@ void main()
     vec2 xy_size = 0.25/vec2(cameraProj[0][0], cameraProj[1][1]);
     vec2 cameraPos = vec2(cameraProj[3][0], cameraProj[3][1]);
 
-    vcoord = a_position*xy_size - xy_size/2.0 - cameraPos*scrollSpeed;
+    vcoord =
+        (a_position - vec2(0.5, 0.5)) // offset to middle of texture
+        * vec2(1.0, xy_size.y/xy_size.x) // scale to keep aspect ratio
+        - vec2(0.5, 0.5) // offset to middle of the screen
+        - cameraPos * scrollSpeed; // only move with some percentage of camera position
+
     gl_Position = vec4(a_position*2.0 - vec2(1.0, 1.0), -z, 1);
 }
 |]

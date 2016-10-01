@@ -94,7 +94,7 @@ init =
         , keys = keys
         , time = 0
         , screen = ( 800, 600 )
-        , camera = Camera.init ( 0, 0 ) 11
+        , camera = Camera.init ( 0, 0 ) 13
         }
             ! [ getScreenSize
               , loadTextures FailedToLoadTexture LoadTexture [ "images/guy.png", "images/grass.png", "images/cloud_bg.png" ]
@@ -227,19 +227,6 @@ renderBackground textures =
         , scrollSpeed = ( 0.2, 0.1 )
         }
     ]
-
-
-
---renderBackground camera =
---    let
---        ( x, y ) =
---            Camera.getPosition camera
---    in
---        Render.rectangleZ
---            { position = ( x - 25, y - 25, -0.1 )
---            , size = ( 50, 50 )
---            , color = Color.rgb 174 238 238
---            }
 
 
 renderMario : Dict String Texture -> Mario -> Renderable
