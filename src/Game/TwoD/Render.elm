@@ -14,6 +14,7 @@ module Game.TwoD.Render
         , veryCustom
         , MakeUniformsFunc
         , parallaxScroll
+        , parallaxScrollWithOptions
         , toWebGl
         )
 
@@ -80,6 +81,7 @@ If you try to use a non power of two texture, WebGL will spit out a bunch of war
 
 ### Background
 @docs parallaxScroll
+@docs parallaxScrollWithOptions
 
 ## Custom
 These are useful if you want to write your own GLSL shaders.
@@ -111,7 +113,7 @@ type Renderable
     = ColoredRectangle { transform : Mat4, color : Vec3 }
     | TexturedRectangle { transform : Mat4, texture : Texture, tileWH : Vec2 }
     | AnimatedSprite { transform : Mat4, texture : Texture, bottomLeft : Vec2, topRight : Vec2, duration : Float, numberOfFrames : Int }
-    | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec2, z : Float }
+    | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec3, z : Float, offset : Vec2 }
     | Custom ({ cameraProj : Mat4, time : Float } -> WebGL.Renderable)
 
 
@@ -149,11 +151,11 @@ toWebGl time cameraProj object =
                 unitSquare
                 { transform = transform, texture = texture, cameraProj = cameraProj, bottomLeft = bottomLeft, topRight = topRight, duration = duration, time = time, numberOfFrames = numberOfFrames }
 
-        ParallaxScroll { texture, tileWH, scrollSpeed, z } ->
+        ParallaxScroll { texture, tileWH, scrollSpeed, z, offset } ->
             WebGL.render vertParallaxScroll
                 fragTextured
                 unitSquare
-                { texture = texture, cameraProj = cameraProj, tileWH = tileWH, scrollSpeed = scrollSpeed, z = z }
+                { texture = texture, cameraProj = cameraProj, tileWH = tileWH, scrollSpeed = scrollSpeed, z = z, offset = offset }
 
         Custom f ->
             f { cameraProj = cameraProj, time = time }
@@ -346,16 +348,26 @@ A scrollSpeed of 0.5 means that the background will scroll half as fast as the c
 -}
 parallaxScroll : { o | scrollSpeed : Float2, z : Float, tileWH : Float2, texture : Maybe Texture } -> Renderable
 parallaxScroll { scrollSpeed, tileWH, texture, z } =
+    parallaxScrollWithOptions { scrollSpeed = scrollSpeed |> \( x, y ) -> ( x, y, 0 ), tileWH = tileWH, texture = texture, z = z, offset = ( 0.5, 0.5 ) }
+
+
+{-|
+Same but with an offset parameter that you can use to position the background.
+Plus scrollSpeed is 3d, the z component affects how the background reacts to the camera zoom.
+-}
+parallaxScrollWithOptions : { o | scrollSpeed : Float3, z : Float, tileWH : Float2, offset : Float2, texture : Maybe Texture } -> Renderable
+parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
     case texture of
         Nothing ->
             rectangleZ { position = ( 0, 0, z ), size = ( 1, 1 ), color = Color.grey }
 
         Just t ->
             ParallaxScroll
-                { scrollSpeed = V2.fromTuple scrollSpeed
+                { scrollSpeed = V3.fromTuple scrollSpeed
                 , z = z
                 , tileWH = V2.fromTuple tileWH
                 , texture = t
+                , offset = V2.fromTuple offset
                 }
 
 
