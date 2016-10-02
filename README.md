@@ -28,11 +28,11 @@ no resource management, no input management, no sound, no networking, etc.
 However, the idea is that each of the mentioned missing topics can be created as a separate package that would live under the same namespace. E.g. a resource manager for textures (but eventually for sounds too) might live in a package called `elm-game-resources` and provide the namespace `Game.Resources`
 
 ## Examples
- * [Bouncy ball](https://zinggi.github.io/elm-2d-game-examples/bouncyBall.html) / [src](https://github.com/Zinggi/elm-2d-game-examples/bouncyBall.elm)
+ * [Bouncy ball](https://zinggi.github.io/elm-2d-game-examples/bouncyBall.html) / [src](https://github.com/Zinggi/elm-2d-game-examples/blob/master/bouncyBall.elm)
 
- * [Jump and run](https://zinggi.github.io/elm-2d-game-examples/MarioLike.html) / [src](https://github.com/Zinggi/elm-2d-game-examples/MarioLike.elm)
+ * [Jump and run](https://zinggi.github.io/elm-2d-game-examples/MarioLike.html) / [src](https://github.com/Zinggi/elm-2d-game-examples/blob/master/MarioLike.elm)
 
- * [Random tests](https://zinggi.github.io/elm-2d-game-examples/example1.html) / [src](https://github.com/Zinggi/elm-2d-game-examples/example1.elm)
+ * [Random tests](https://zinggi.github.io/elm-2d-game-examples/example1.html) / [src](https://github.com/Zinggi/elm-2d-game-examples/blob/master/example1.elm)
 
 
 ## Docs
