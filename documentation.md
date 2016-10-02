@@ -240,12 +240,22 @@ the same with rotation
 
 ### Background
 ```elm
-parallaxScroll : { o | scrollSpeed : Float, z : Float, tileWH : Game.Helpers.Float2, texture : Maybe.Maybe WebGL.Texture }
+parallaxScroll : { o | scrollSpeed : Game.Helpers.Float2, z : Float, tileWH : Game.Helpers.Float2, texture : Maybe.Maybe WebGL.Texture }
     -> Game.TwoD.Render.Renderable
 ```
 
 Used for scrolling backgrounds.
 A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
+
+---
+
+```elm
+parallaxScrollWithOptions : { o | scrollSpeed : Game.Helpers.Float3, z : Float, tileWH : Game.Helpers.Float2, offset : Game.Helpers.Float2, texture : Maybe.Maybe WebGL.Texture }
+    -> Game.TwoD.Render.Renderable
+```
+
+Same but with an offset parameter that you can use to position the background.
+Plus scrollSpeed is 3d, the z component affects how the background reacts to the camera zoom.
 
 ---
 
@@ -374,7 +384,7 @@ Can be generally used if the fragment shader needs to display texture(s).
 ---
 
 ```elm
-vertParallaxScroll : WebGL.Shader Game.TwoD.Shapes.Vertex { u | cameraProj : Math.Matrix4.Mat4, scrollSpeed : Float, z : Float } { vcoord : Math.Vector2.Vec2 }
+vertParallaxScroll : WebGL.Shader Game.TwoD.Shapes.Vertex { u | cameraProj : Math.Matrix4.Mat4, scrollSpeed : Math.Vector3.Vec3, z : Float, offset : Math.Vector2.Vec2 } { vcoord : Math.Vector2.Vec2 }
 ```
 
 A shader that scrolls it's texture when the camera moves, but at not at the same speed.
