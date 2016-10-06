@@ -39,3 +39,18 @@ colorToVector color =
     case Color.toRgb color of
         { red, green, blue } ->
             vec3 (toFloat red / 256) (toFloat green / 256) (toFloat blue / 256)
+
+
+add : Float2 -> Float2 -> Float2
+add ( x1, y1 ) ( x2, y2 ) =
+    ( x1 + x2, y1 + y2 )
+
+
+sub : Float2 -> Float2 -> Float2
+sub ( x1, y1 ) ( x2, y2 ) =
+    ( x1 - x2, y1 - y2 )
+
+
+scale : Float -> Float2 -> Float2
+scale a ( x, y ) =
+    ( a * x, a * y )

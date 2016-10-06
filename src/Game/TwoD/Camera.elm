@@ -1,105 +1,99 @@
-module Game.TwoD.Camera exposing (Camera, init, getProjectionMatrix, getPosition, withZoom, setZoom, getZoom, follow, moveBy, moveTo)
+module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, view, getPosition, follow, moveBy, moveTo)
 
 {-|
 This provides a basic camera.
 
-You don't have to use this functions to get a working camera,
-you can just follow the `Camera` type.
+You can also create your own camera type if you wish.
+To do so, have a look at the source of this file.
 
-E.g. in my game I have a camera that can follow the player and that does the right thing when the player dies etc.
+@docs Camera, fixedWidth, fixedHeight
 
-@docs Camera
+@docs getPosition, moveBy, moveTo, follow
 
-@docs init
-
-@docs getPosition
-
-@docs moveBy
-
-@docs moveTo
-
-@docs follow
-
-
-@docs withZoom
-
-@docs setZoom
-
-@docs getZoom
----
-## used internally
-
-@docs getProjectionMatrix
+@docs view
 -}
 
-import Math.Vector2 as V2 exposing (..)
-import Math.Matrix4 exposing (..)
+import Math.Vector2 as V2 exposing (Vec2)
+import Math.Matrix4 as M4 exposing (Mat4)
+import Game.Helpers exposing (..)
+
+
+type Kind
+    = Width
+    | Height
 
 
 {-|
-A camera that always shows `width` units of the world.
-It's an extensible record so that you can write your own camera
+A camera represents how to render the virtual world.
+It's essentially a transformation from virtual game coordinates to pixel coordinates on the screen.
 -}
-type alias Camera a =
-    { a | position : Vec2, width : Float }
+type alias Camera =
+    { kind : Kind, size : Float, position : ( Float, Float ) }
 
 
 {-|
-Create a simple camera.
+A camera that always shows `width` units of your game horizontally.
+Well suited for a side-scroller.
 -}
-init : ( Float, Float ) -> Float -> Camera {}
-init ( x, y ) width =
-    { position = vec2 x y, width = width }
+fixedWidth : Float -> ( Float, Float ) -> Camera
+fixedWidth =
+    Camera Width
+
+
+{-|
+A camera that always shows `height` units of your game vertically.
+Well suited for a vertical scroller.
+-}
+fixedHeight : Float -> ( Float, Float ) -> Camera
+fixedHeight =
+    Camera Height
 
 
 {-|
 Gets the transformation that represents how to transform the camera back to the origin.
 The result of this is used in the vertex shader.
 -}
-getProjectionMatrix : ( Float, Float ) -> Camera a -> Mat4
-getProjectionMatrix ( w, h ) { position, width } =
+view : Camera -> ( Float, Float ) -> Mat4
+view { position, size, kind } ( w, h ) =
     let
         ( x, y ) =
-            toTuple position
+            position
 
         ( w, h ) =
-            ( 0.5 * width, 0.5 * width * h / w )
+            case kind of
+                Width ->
+                    ( 0.5 * size, 0.5 * size * h / w )
+
+                Height ->
+                    ( 0.5 * size * w / h, 0.5 * size )
 
         ( l, r, d, u ) =
             ( x - w, x + w, y - h, y + h )
     in
-        makeOrtho2D l r d u
+        M4.makeOrtho2D l r d u
 
 
 {-|
 -}
-getPosition : Camera a -> ( Float, Float )
+getPosition : Camera -> ( Float, Float )
 getPosition camera =
-    toTuple camera.position
-
-
-{-|
-Create a camera with zooming capabilities. Serves as an example on how to create your own camera type
--}
-withZoom : ( Float, Float ) -> Float -> Camera { baseWidth : Float }
-withZoom ( x, y ) baseWidth =
-    { position = vec2 x y, baseWidth = baseWidth, width = baseWidth }
+    camera.position
 
 
 {-|
 Move a camera by the given vector *relative* to the camera.
 -}
-moveBy : ( Float, Float ) -> Camera a -> Camera a
-moveBy ( x, y ) camera =
-    { camera | position = add camera.position (vec2 x y) }
+moveBy : ( Float, Float ) -> Camera -> Camera
+moveBy offset camera =
+    { camera | position = add camera.position offset }
 
 
 {-|
 Move a camera to the given location. In *absolute* coordinates.
 -}
-moveTo : ( Float, Float ) -> Camera a -> Camera a
-moveTo ( x, y ) camera =
-    { camera | position = vec2 x y }
+moveTo : ( Float, Float ) -> Camera -> Camera
+moveTo pos camera =
+    { camera | position = pos }
 
 
 {-|
@@ -108,30 +102,13 @@ Smoothly follow the given target. Use this in your tick function.
     follow 1.5 dt target camera
 
 -}
-follow : Float -> Float -> ( Float, Float ) -> Camera a -> Camera a
-follow speed dt ( x, y ) ({ position } as camera) =
+follow : Float -> Float -> ( Float, Float ) -> Camera -> Camera
+follow speed dt target ({ position } as camera) =
     let
-        target =
-            vec2 x y
-
         vectorToTarget =
             (target `sub` position)
 
         newPosition =
-            (position `add` (V2.scale (speed * dt) vectorToTarget))
+            (position `add` (scale (speed * dt) vectorToTarget))
     in
         { camera | position = newPosition }
-
-
-{-|
--}
-setZoom : Float -> Camera { baseWidth : Float } -> Camera { baseWidth : Float }
-setZoom z c =
-    { c | width = c.baseWidth * z }
-
-
-{-|
--}
-getZoom : Camera { baseWidth : Float } -> Float
-getZoom { baseWidth, width } =
-    width / baseWidth
