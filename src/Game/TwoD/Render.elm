@@ -345,6 +345,8 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
 {-|
 Used for scrolling backgrounds.
 A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
+
+**NOTE**: This currently only behaves correctly if you use a Camera.fixedWidth
 -}
 parallaxScroll : { o | scrollSpeed : Float2, z : Float, tileWH : Float2, texture : Maybe Texture } -> Renderable
 parallaxScroll { scrollSpeed, tileWH, texture, z } =
