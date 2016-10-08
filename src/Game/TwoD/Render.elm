@@ -437,17 +437,15 @@ customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } 
 
 {-|
 This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directly.
-If you use this you have to calculate your transformations yourself.
+If you use this you have to calculate your transformations yourself. (You can use Shaders.makeTransform)
 
-If you need a quad as attributes, you can take the one from Game.TwoD.Shapes
-
-TODO: Expose make transform
+If you need a square as attributes, you can take the one from Game.TwoD.Shapes
 
     veryCustom (\{cameraProj, time} ->
         WebGL.render vert frag Shapes.unitSquare
-          { u_crazyFrog=frogTexture
-          , transform=transform
-          , camera=cameraProj
+          { u_crazyFrog = frogTexture
+          , transform = Shaders.makeTransform (x, y, z) 0 (2, 4) (0, 0)
+          , camera = cameraProj
           }
     )
 -}

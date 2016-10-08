@@ -6,14 +6,16 @@ This provides a basic camera.
 You can also create your own camera type if you wish.
 To do so, have a look at the source of this file.
 
-@docs Camera, fixedArea, fixedWidth, fixedHeight
+## camera creation
+@docs Camera, fixedArea, fixedWidth, fixedHeight, custom
 
+## manipulate camera
 @docs getPosition, moveBy, moveTo, follow
 
+---
 @docs view
 -}
 
-import Math.Vector2 as V2 exposing (Vec2)
 import Math.Matrix4 as M4 exposing (Mat4)
 import Game.Helpers exposing (..)
 

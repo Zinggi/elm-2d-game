@@ -10,14 +10,14 @@ and a shader from here already provides one half.
 Or if you're using WebGL directly.
 
 ## Vertex shaders
-@docs vertColoredRect
-@docs vertTexturedRect
-@docs vertParallaxScroll
+@docs vertColoredRect, vertTexturedRect, vertParallaxScroll
 
 ## Fragment shaders
-@docs fragTextured
-@docs fragAnimTextured
-@docs fragUniColor
+@docs fragTextured, fragAnimTextured, fragUniColor
+
+---
+### useful helper functions
+@docs colorToRGBAVector, colorToRGBVector, makeTransform
 -}
 
 import WebGL exposing (Shader, Texture)

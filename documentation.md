@@ -12,7 +12,7 @@ suggested import:
 
 ```elm
 type alias RenderConfig = 
-  { time : Float , size : Game.Helpers.Int2 , camera : Game.TwoD.Camera.Camera a }
+  { time : Float , size : ( Int, Int ) , camera : Game.TwoD.Camera.Camera }
 ```
 
 This is used by all the functions below, it represents all the shared state needed to render stuff.
@@ -23,7 +23,7 @@ If you don't use sprite animations you can use `0` for the time parameter.
 
 ## Canvas element only
 ```elm
-render : Game.TwoD.RenderConfig a -> List Game.TwoD.Render.Renderable -> Html.Html x
+render : Game.TwoD.RenderConfig -> List Game.TwoD.Render.Renderable -> Html.Html x
 ```
 
 Creates a canvas element that renders the given Renderables.
@@ -39,7 +39,7 @@ If you don't use animated sprites, you can use `0` for the time parameter.
 
 ```elm
 renderWithOptions : List (Html.Attribute msg)
-    -> Game.TwoD.RenderConfig a
+    -> Game.TwoD.RenderConfig
     -> List Game.TwoD.Render.Renderable
     -> Html.Html msg
 ```
@@ -57,7 +57,7 @@ to use a smaller `size` argument and than scale the canvas with css. e.g.
 
 ## Embedded in a div
 ```elm
-renderCentered : Game.TwoD.RenderConfig a -> List Game.TwoD.Render.Renderable -> Html.Html x
+renderCentered : Game.TwoD.RenderConfig -> List Game.TwoD.Render.Renderable -> Html.Html x
 ```
 
 Same as `render`, but wrapped in a div and nicely centered on the page using flexbox
@@ -67,7 +67,7 @@ Same as `render`, but wrapped in a div and nicely centered on the page using fle
 ```elm
 renderCenteredWithOptions : List (Html.Attribute msg)
     -> List (Html.Attribute msg)
-    -> Game.TwoD.RenderConfig a
+    -> Game.TwoD.RenderConfig
     -> List Game.TwoD.Render.Renderable
     -> Html.Html msg
 ```
@@ -81,6 +81,8 @@ Same as above, but you can specify attributes for the container div and the canv
         renderables
 
 ---
+
+
 
 
 
@@ -247,6 +249,8 @@ parallaxScroll : { o | scrollSpeed : Game.Helpers.Float2, z : Float, tileWH : Ga
 Used for scrolling backgrounds.
 A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
 
+**NOTE**: This currently only behaves correctly if you use a Camera.fixedWidth
+
 ---
 
 ```elm
@@ -373,7 +377,6 @@ Since it doesn't even pass along the texture coordinates,
 it's only use is to create a colored rectangle.
 
 ---
-
 ```elm
 vertTexturedRect : WebGL.Shader Game.TwoD.Shapes.Vertex { u | transform : Math.Matrix4.Mat4, cameraProj : Math.Matrix4.Mat4 } { vcoord : Math.Vector2.Vec2 }
 ```
@@ -382,7 +385,6 @@ A simple shader that passes the texture coordinates along for the fragment shade
 Can be generally used if the fragment shader needs to display texture(s).
 
 ---
-
 ```elm
 vertParallaxScroll : WebGL.Shader Game.TwoD.Shapes.Vertex { u | cameraProj : Math.Matrix4.Mat4, scrollSpeed : Math.Vector3.Vec3, z : Float, offset : Math.Vector2.Vec2 } { vcoord : Math.Vector2.Vec2 }
 ```
@@ -402,7 +404,6 @@ Display a tiled texture.
 TileWH specifies how many times the texture should be tiled.
 
 ---
-
 ```elm
 fragAnimTextured : WebGL.Shader {} { u | texture : WebGL.Texture, bottomLeft : Math.Vector2.Vec2, topRight : Math.Vector2.Vec2, numberOfFrames : Int, duration : Float, time : Float } { vcoord : Math.Vector2.Vec2 }
 ```
@@ -411,12 +412,42 @@ A shader to render spritesheet animations.
 It assumes that the animation frames are in one horizontal line
 
 ---
-
 ```elm
 fragUniColor : WebGL.Shader {} { u | color : Math.Vector3.Vec3 } {}
 ```
 
 A very simple shader, coloring the whole area in a single color
+
+---
+
+
+---
+### useful helper functions
+```elm
+colorToRGBAVector : Color.Color -> Math.Vector4.Vec4
+```
+
+
+
+---
+```elm
+colorToRGBVector : Color.Color -> Math.Vector3.Vec3
+```
+
+
+
+---
+```elm
+makeTransform : Game.Helpers.Float3
+    -> Float
+    -> Game.Helpers.Float2
+    -> Game.Helpers.Float2
+    -> Math.Matrix4.Mat4
+```
+
+Creates a transformation matrix usually used in the fragment shader.
+
+    makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
 
 ---
 
@@ -463,63 +494,90 @@ attribute to the vertex shader
 
 This provides a basic camera.
 
-You don't have to use this functions to get a working camera,
-you can just follow the `Camera` type.
+You can also create your own camera type if you wish.
+To do so, have a look at the source of this file.
 
-E.g. in my game I have a camera that can follow the player and that does the right thing when the player dies etc.
-
+## camera creation
 ```elm
-type alias Camera = 
-  { a | position : Math.Vector2.Vec2, width : Float }
+type Camera
+    = Camera
 ```
 
-A camera that always shows `width` units of the world.
-It's an extensible record so that you can write your own camera
+A camera represents how to render the virtual world.
+It's essentially a transformation from virtual game coordinates to pixel coordinates on the screen.
+
+---
+```elm
+fixedArea : Float -> ( Float, Float ) -> Game.TwoD.Camera.Camera
+```
+
+A camera that always shows the same area.
+This is useful in a top down game.
+This means that you probably want to specify the area property like this:
+
+    fixedArea (16*10) (x, y)
+
+This would show 16 by 10 units IF the game is displayed in a 16:10 viewport.
+But in a 4:3 viewport it would show sqrt(16*10*4/3)=14.6 by sqrt(16*10*3/4)=10.95 units.
+
+---
+```elm
+fixedWidth : Float -> ( Float, Float ) -> Game.TwoD.Camera.Camera
+```
+
+A camera that always shows `width` units of your game horizontally.
+Well suited for a side-scroller.
+
+---
+```elm
+fixedHeight : Float -> ( Float, Float ) -> Game.TwoD.Camera.Camera
+```
+
+A camera that always shows `height` units of your game vertically.
+Well suited for a vertical scroller.
+
+---
+```elm
+custom : (( Float, Float ) -> ( Float, Float )) -> ( Float, Float ) -> Game.TwoD.Camera.Camera
+```
+
+The custom camera allows you to use a function
+that maps viewport size (in pixel) to game units.
+E.g. here's an implementation of the fixedWidth camera using custom:
+
+    fixedWidth width =
+        custom (\(w, h) -> (width, width * h / w))
 
 ---
 
 
+## manipulate camera
 ```elm
-init : ( Float, Float ) -> Float -> Game.TwoD.Camera.Camera {}
-```
-
-Create a simple camera.
-
----
-
-
-```elm
-getPosition : Game.TwoD.Camera.Camera a -> ( Float, Float )
+getPosition : Game.TwoD.Camera.Camera -> ( Float, Float )
 ```
 
 
 
 ---
-
-
 ```elm
-moveBy : ( Float, Float ) -> Game.TwoD.Camera.Camera a -> Game.TwoD.Camera.Camera a
+moveBy : ( Float, Float ) -> Game.TwoD.Camera.Camera -> Game.TwoD.Camera.Camera
 ```
 
 Move a camera by the given vector *relative* to the camera.
 
 ---
-
-
 ```elm
-moveTo : ( Float, Float ) -> Game.TwoD.Camera.Camera a -> Game.TwoD.Camera.Camera a
+moveTo : ( Float, Float ) -> Game.TwoD.Camera.Camera -> Game.TwoD.Camera.Camera
 ```
 
 Move a camera to the given location. In *absolute* coordinates.
 
 ---
-
-
 ```elm
 follow : Float
     -> Float
-    -> ( Float, Float ) -> Game.TwoD.Camera.Camera a
-    -> Game.TwoD.Camera.Camera a
+    -> ( Float, Float ) -> Game.TwoD.Camera.Camera
+    -> Game.TwoD.Camera.Camera
 ```
 
 Smoothly follow the given target. Use this in your tick function.
@@ -529,38 +587,9 @@ Smoothly follow the given target. Use this in your tick function.
 ---
 
 
-
-```elm
-withZoom : ( Float, Float ) -> Float -> Game.TwoD.Camera.Camera { baseWidth : Float }
-```
-
-Create a camera with zooming capabilities. Serves as an example on how to create your own camera type
-
 ---
-
-
 ```elm
-setZoom : Float -> Game.TwoD.Camera.Camera { baseWidth : Float } -> Game.TwoD.Camera.Camera { baseWidth : Float }
-```
-
-
-
----
-
-
-```elm
-getZoom : Game.TwoD.Camera.Camera { baseWidth : Float } -> Float
-```
-
-
-
----
-
----
-## used internally
-
-```elm
-getProjectionMatrix : ( Float, Float ) -> Game.TwoD.Camera.Camera a -> Math.Matrix4.Mat4
+view : Game.TwoD.Camera.Camera -> ( Float, Float ) -> Math.Matrix4.Mat4
 ```
 
 Gets the transformation that represents how to transform the camera back to the origin.

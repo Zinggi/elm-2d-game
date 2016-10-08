@@ -33,12 +33,10 @@ suggested import:
 import Html exposing (Html, Attribute)
 import Html.Attributes as Attr
 import WebGL exposing (Texture, Shader)
-import Math.Matrix4 exposing (Mat4)
 
 
 --
 
-import Game.Helpers exposing (..)
 import Game.TwoD.Render as Render exposing (Renderable)
 import Game.TwoD.Camera as Camera exposing (Camera)
 
