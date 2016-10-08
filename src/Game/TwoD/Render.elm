@@ -102,7 +102,7 @@ import Math.Vector2 as V2 exposing (Vec2, vec2)
 import Math.Vector3 as V3 exposing (Vec3)
 import Game.TwoD.Shaders exposing (..)
 import Game.TwoD.Shapes exposing (unitSquare)
-import Game.Helpers exposing (..)
+import Game.Helpers as Helpers exposing (..)
 
 
 {-|
@@ -201,7 +201,7 @@ rectangleWithOptions { color, rotation, position, size, pivot } =
     in
         ColoredRectangle
             { transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
-            , color = colorToVector color
+            , color = colorToRGBVector color
             }
 
 

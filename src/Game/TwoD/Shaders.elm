@@ -21,10 +21,41 @@ Or if you're using WebGL directly.
 -}
 
 import WebGL exposing (Shader, Texture)
+import Color exposing (Color)
 import Game.TwoD.Shapes exposing (Vertex)
-import Math.Matrix4 exposing (Mat4)
-import Math.Vector2 exposing (Vec2)
-import Math.Vector3 exposing (Vec3)
+import Math.Matrix4 as M4 exposing (Mat4)
+import Math.Vector2 as V2 exposing (Vec2)
+import Math.Vector3 as V3 exposing (Vec3, vec3)
+import Math.Vector4 exposing (Vec4, vec4)
+import Game.Helpers exposing (..)
+
+
+{-| Creates a transformation matrix usually used in the fragment shader.
+
+    makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
+-}
+makeTransform : Float3 -> Float -> Float2 -> Float2 -> Mat4
+makeTransform ( x, y, z ) rotation ( w, h ) ( px, py ) =
+    (M4.makeTranslate ((vec3 x y z) `V3.add` (vec3 (abs w * px) (abs h * py) 0)))
+        `M4.mul` (M4.makeRotate rotation (vec3 0 0 1))
+        `M4.mul` (M4.makeScale (vec3 w h 1))
+        `M4.mul` (M4.makeTranslate (vec3 -px -py 0))
+
+
+{-| -}
+colorToRGBVector : Color -> Vec3
+colorToRGBVector color =
+    case Color.toRgb color of
+        { red, green, blue } ->
+            vec3 (toFloat red / 256) (toFloat green / 256) (toFloat blue / 256)
+
+
+{-| -}
+colorToRGBAVector : Color -> Vec4
+colorToRGBAVector color =
+    case Color.toRgb color of
+        { red, green, blue, alpha } ->
+            vec4 (toFloat red / 256) (toFloat green / 256) (toFloat blue / 256) (alpha / 256)
 
 
 {-|

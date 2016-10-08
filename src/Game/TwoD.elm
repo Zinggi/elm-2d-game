@@ -26,6 +26,8 @@ suggested import:
 ## Embedded in a div
 @docs renderCentered
 @docs renderCenteredWithOptions
+
+
 -}
 
 import Html exposing (Html, Attribute)
@@ -46,7 +48,7 @@ This is used by all the functions below, it represents all the shared state need
 If you don't use sprite animations you can use `0` for the time parameter.
 -}
 type alias RenderConfig =
-    { time : Float, size : Int2, camera : Camera }
+    { time : Float, size : ( Int, Int ), camera : Camera }
 
 
 {-|
@@ -60,21 +62,8 @@ If you don't use animated sprites, you can use `0` for the time parameter.
         ]
 -}
 render : RenderConfig -> List Renderable -> Html x
-render config =
-    renderWithOptions [] (configToAdvanced config)
-
-
-{-|
-Similar to the normal render config, but this allows for using a custom camera.
-If you don't want a custom camera, just provide `Camera.view state.camera` for the cameraFn argument.
--}
-type alias AdvanceRenderConfig =
-    { time : Float, size : Int2, cameraFn : Float2 -> Mat4 }
-
-
-configToAdvanced : RenderConfig -> AdvanceRenderConfig
-configToAdvanced { time, size, camera } =
-    { time = time, size = size, cameraFn = Camera.view camera }
+render =
+    renderWithOptions []
 
 
 {-|
@@ -86,14 +75,14 @@ to use a smaller `size` argument and than scale the canvas with css. e.g.
         { time = time, size = (400, 300), camera = camera }
         (World.render model.world)
 -}
-renderWithOptions : List (Attribute msg) -> AdvanceRenderConfig -> List Renderable -> Html msg
-renderWithOptions attributes { time, size, cameraFn } objects =
+renderWithOptions : List (Attribute msg) -> RenderConfig -> List Renderable -> Html msg
+renderWithOptions attributes { time, size, camera } objects =
     let
         ( w, h ) =
             size
 
         cameraProj =
-            cameraFn ( toFloat w, toFloat h )
+            Camera.view camera ( toFloat w, toFloat h )
     in
         WebGL.toHtmlWith
             [ WebGL.Enable WebGL.Blend, WebGL.Enable WebGL.DepthTest, WebGL.BlendFunc ( WebGL.One, WebGL.OneMinusSrcAlpha ) ]
@@ -109,8 +98,8 @@ renderWithOptions attributes { time, size, cameraFn } objects =
 Same as `render`, but wrapped in a div and nicely centered on the page using flexbox
 -}
 renderCentered : RenderConfig -> List Renderable -> Html x
-renderCentered config =
-    renderCenteredWithOptions [] [] (configToAdvanced config)
+renderCentered =
+    renderCenteredWithOptions [] []
 
 
 {-|
@@ -125,7 +114,7 @@ Same as above, but you can specify attributes for the container div and the canv
 renderCenteredWithOptions :
     List (Attribute msg)
     -> List (Attribute msg)
-    -> AdvanceRenderConfig
+    -> RenderConfig
     -> List Renderable
     -> Html msg
 renderCenteredWithOptions containerAttributes canvasAttributes renderConfig objects =
@@ -141,8 +130,3 @@ renderCenteredWithOptions containerAttributes canvasAttributes renderConfig obje
             ++ containerAttributes
         )
         [ renderWithOptions canvasAttributes renderConfig objects ]
-
-
-makeTransform : Float3 -> Float -> Float2 -> Float2 -> Mat4
-makeTransform =
-    Game.Helpers.makeTransform
