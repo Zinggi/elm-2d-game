@@ -102,6 +102,7 @@ import Math.Vector2 as V2 exposing (Vec2, vec2)
 import Math.Vector3 as V3 exposing (Vec3)
 import Game.TwoD.Shaders exposing (..)
 import Game.TwoD.Shapes exposing (unitSquare)
+import Game.TwoD.Camera as Camera exposing (Camera)
 import Game.Helpers as Helpers exposing (..)
 
 
@@ -128,10 +129,10 @@ type alias MakeUniformsFunc a =
 {-|
 Converts a Renderable to a WebGL.Renderable.
 
-    toWebGl time cameraProj renderable
+    toWebGl time camera (w, h) cameraProj renderable
 -}
-toWebGl : Float -> Mat4 -> Renderable -> WebGL.Renderable
-toWebGl time cameraProj object =
+toWebGl : Float -> Camera -> Float2 -> Mat4 -> Renderable -> WebGL.Renderable
+toWebGl time camera screenSize cameraProj object =
     case object of
         ColoredRectangle { transform, color } ->
             WebGL.render vertColoredRect
@@ -152,10 +153,17 @@ toWebGl time cameraProj object =
                 { transform = transform, texture = texture, cameraProj = cameraProj, bottomLeft = bottomLeft, topRight = topRight, duration = duration, time = time, numberOfFrames = numberOfFrames }
 
         ParallaxScroll { texture, tileWH, scrollSpeed, z, offset } ->
-            WebGL.render vertParallaxScroll
-                fragTextured
-                unitSquare
-                { texture = texture, cameraProj = cameraProj, tileWH = tileWH, scrollSpeed = scrollSpeed, z = z, offset = offset }
+            let
+                size =
+                    Camera.getViewSize screenSize camera
+
+                pos =
+                    Camera.getPosition camera
+            in
+                WebGL.render vertParallaxScroll
+                    fragTextured
+                    unitSquare
+                    { texture = texture, tileWH = tileWH, scrollSpeed = scrollSpeed, z = z, offset = offset, cameraPos = V2.fromTuple pos, cameraSize = V2.fromTuple size }
 
         Custom f ->
             f { cameraProj = cameraProj, time = time }
@@ -345,8 +353,6 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
 {-|
 Used for scrolling backgrounds.
 A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
-
-**NOTE**: This currently only behaves correctly if you use a Camera.fixedWidth
 -}
 parallaxScroll : { o | scrollSpeed : Float2, z : Float, tileWH : Float2, texture : Maybe Texture } -> Renderable
 parallaxScroll { scrollSpeed, tileWH, texture, z } =

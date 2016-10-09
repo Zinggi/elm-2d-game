@@ -1,4 +1,4 @@
-module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, custom, view, getPosition, follow, moveBy, moveTo)
+module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, custom, view, getViewSize, getPosition, follow, moveBy, moveTo)
 
 {-|
 This provides a basic camera.
@@ -13,7 +13,7 @@ To do so, have a look at the source of this file.
 @docs getPosition, moveBy, moveTo, follow
 
 ---
-@docs view
+@docs view, getViewSize
 -}
 
 import Math.Matrix4 as M4 exposing (Mat4)
@@ -87,33 +87,37 @@ Gets the transformation that represents how to transform the camera back to the 
 The result of this is used in the vertex shader.
 -}
 view : Camera -> ( Float, Float ) -> Mat4
-view (Camera { position, size }) ( w, h ) =
+view ((Camera { position }) as camera) size =
     let
         ( x, y ) =
             position
 
         ( w, h ) =
-            case size of
-                Width x ->
-                    ( 0.5 * x, 0.5 * x * h / w )
-
-                Height y ->
-                    ( 0.5 * y * w / h, 0.5 * y )
-
-                Area a ->
-                    ( 0.5 * sqrt (a * w / h), 0.5 * sqrt (a * h / w) )
-
-                Custom fn ->
-                    let
-                        ( w', h' ) =
-                            fn ( w, h )
-                    in
-                        ( 0.5 * w', 0.5 * h' )
+            scale 0.5 (getViewSize size camera)
 
         ( l, r, d, u ) =
             ( x - w, x + w, y - h, y + h )
     in
         M4.makeOrtho2D l r d u
+
+
+{-|
+Given the screen size, gets the width and height in game units
+-}
+getViewSize : ( Float, Float ) -> Camera -> ( Float, Float )
+getViewSize ( w, h ) (Camera { size }) =
+    case size of
+        Width x ->
+            ( x, x * h / w )
+
+        Height y ->
+            ( y * w / h, y )
+
+        Area a ->
+            ( sqrt (a * w / h), sqrt (a * h / w) )
+
+        Custom fn ->
+            fn ( w, h )
 
 
 {-|
