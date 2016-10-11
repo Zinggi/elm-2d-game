@@ -2,7 +2,7 @@
 
 This library aims to enable creating 2d games based on WebGL using elm.
 
-TODO: pretty pictures and better examples
+TODO: pretty pictures and more examples
 
 
 ## Related Libraries

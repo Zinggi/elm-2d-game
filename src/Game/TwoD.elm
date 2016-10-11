@@ -26,13 +26,11 @@ suggested import:
 ## Embedded in a div
 @docs renderCentered
 @docs renderCenteredWithOptions
-
-
 -}
 
 import Html exposing (Html, Attribute)
 import Html.Attributes as Attr
-import WebGL exposing (Texture, Shader)
+import WebGL
 
 
 --

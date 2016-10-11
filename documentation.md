@@ -84,8 +84,6 @@ Same as above, but you can specify attributes for the container div and the canv
 
 
 
-
-
 ---
 
 # Game.TwoD.Render
@@ -103,12 +101,12 @@ suggested import:
     import Game.TwoD.Render as Render exposing (Renderable)
 
 
-The functions to render something all come in 3 forms:
+Most functions to render something come in 3 forms:
 
     thing, thingZ, thingWithOptions
 
-The first is the most common one where you can only specify
-the size, the position in 2d and the color.
+The first is the most common one where you can specify
+the size, the position in 2d and some more.
 
 
 The second one is the same as the first, but with a 3d position.
@@ -167,13 +165,10 @@ Textures are `Maybe` values because you can never have a texture at the start of
 You first have to load your textures. In case you pass a `Nothing` as a value for a texture,
 A gray rectangle will be displayed instead.
 
-For loading textures I suggest keeping a dictionary of textures and then use your textures
-by calling `Dict.get "textureId" model.textures` as this already returns a Maybe value
-, making it a perfect fit to pass for the texture parameter.
+For loading textures I suggest using the [game-resources library](http://package.elm-lang.org/packages/Zinggi/elm-game-resources/latest).
 
-**NOTE**: Texture dimensions have to be in a power of 2, e.g. 2^n x 2^m, like 4x16, 16x16, 512x256, etc.
+**NOTE**: Texture dimensions have to be in a power of 2, e.g. (2^n)x(2^m), like 4x16, 16x16, 512x256, etc.
 If you try to use a non power of two texture, WebGL will spit out a bunch of warnings and display a black rectangle.
-
 
 ```elm
 sprite : { o | texture : Maybe.Maybe WebGL.Texture, position : Game.Helpers.Float2, size : Game.Helpers.Float2 }
@@ -247,19 +242,17 @@ parallaxScroll : { o | scrollSpeed : Game.Helpers.Float2, z : Float, tileWH : Ga
 ```
 
 Used for scrolling backgrounds.
-A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
-
-**NOTE**: This currently only behaves correctly if you use a Camera.fixedWidth
+This probably wont satisfy all possible needs for a scrolling background,
+but it can give you something that looks nice quickly.
 
 ---
 
 ```elm
-parallaxScrollWithOptions : { o | scrollSpeed : Game.Helpers.Float3, z : Float, tileWH : Game.Helpers.Float2, offset : Game.Helpers.Float2, texture : Maybe.Maybe WebGL.Texture }
+parallaxScrollWithOptions : { o | scrollSpeed : Game.Helpers.Float2, z : Float, tileWH : Game.Helpers.Float2, offset : Game.Helpers.Float2, texture : Maybe.Maybe WebGL.Texture }
     -> Game.TwoD.Render.Renderable
 ```
 
 Same but with an offset parameter that you can use to position the background.
-Plus scrollSpeed is 3d, the z component affects how the background reacts to the camera zoom.
 
 ---
 
@@ -285,7 +278,7 @@ For the fragment shader, you have the `vec2 varying vcoord;` variable available,
 which can be used to sample a texture (`texture2D(texture, vcoord);`)
 
 The `MakeUniformsFunc` allows you to pass along any additional uniforms you may need.
-This typically looks something like this:
+In practice, this might look something like this:
 
     makeUniforms {cameraProj, transform, time} =
         {cameraProj=cameraProj, transform=transform, time=time, myUniform=someVector}
@@ -299,9 +292,10 @@ This typically looks something like this:
     precision mediump float;
 
     varying vec2 vcoord;
+    uniform vec2 myUniform;
 
     void main () {
-      gl_FragColor = vcoord.yx;
+      gl_FragColor = vcoord.yx + myUniform;
     }
     |]
 
@@ -323,17 +317,15 @@ veryCustom : ({ cameraProj : Math.Matrix4.Mat4, time : Float } -> WebGL.Renderab
 ```
 
 This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directly.
-If you use this you have to calculate your transformations yourself.
+If you use this you have to calculate your transformations yourself. (You can use Shaders.makeTransform)
 
-If you need a quad as attributes, you can take the one from Game.TwoD.Shapes
-
-TODO: Expose make transform
+If you need a square as attributes, you can take the one from Game.TwoD.Shapes
 
     veryCustom (\{cameraProj, time} ->
         WebGL.render vert frag Shapes.unitSquare
-          { u_crazyFrog=frogTexture
-          , transform=transform
-          , camera=cameraProj
+          { u_crazyFrog = frogTexture
+          , transform = Shaders.makeTransform (x, y, z) 0 (2, 4) (0, 0)
+          , camera = cameraProj
           }
     )
 
@@ -341,14 +333,18 @@ TODO: Expose make transform
 
 ```elm
 toWebGl : Float
+    -> Game.TwoD.Camera.Camera
+    -> Game.Helpers.Float2
     -> Math.Matrix4.Mat4
     -> Game.TwoD.Render.Renderable
     -> WebGL.Renderable
 ```
 
 Converts a Renderable to a WebGL.Renderable.
+You don't need this unless you want to slowely introduce
+this library in a project that currently uses WebGL directly.
 
-    toWebGl time cameraProj renderable
+    toWebGl time camera (w, h) cameraProj renderable
 
 ---
 
@@ -386,7 +382,7 @@ Can be generally used if the fragment shader needs to display texture(s).
 
 ---
 ```elm
-vertParallaxScroll : WebGL.Shader Game.TwoD.Shapes.Vertex { u | cameraProj : Math.Matrix4.Mat4, scrollSpeed : Math.Vector3.Vec3, z : Float, offset : Math.Vector2.Vec2 } { vcoord : Math.Vector2.Vec2 }
+vertParallaxScroll : WebGL.Shader Game.TwoD.Shapes.Vertex { u | cameraPos : Math.Vector2.Vec2, cameraSize : Math.Vector2.Vec2, scrollSpeed : Math.Vector2.Vec2, z : Float, offset : Math.Vector2.Vec2 } { vcoord : Math.Vector2.Vec2 }
 ```
 
 A shader that scrolls it's texture when the camera moves, but at not at the same speed.
@@ -448,40 +444,6 @@ makeTransform : Game.Helpers.Float3
 Creates a transformation matrix usually used in the fragment shader.
 
     makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
-
----
-
-
-
----
-
-# Game.TwoD.Shapes
-
-
-# Shapes for WebGL rendering.
-
-You don't need this module,
-unless you want to have a ready made square for a custom vertex shader.
-Since we're dealing with 2d only,
-the only available shape is a square
-
-```elm
-unitSquare : WebGL.Drawable Game.TwoD.Shapes.Vertex
-```
-
-A square with corners (0, 0), (1, 1)
-
----
-
-
-```elm
-type alias Vertex = 
-  { a_position : Math.Vector2.Vec2 }
-```
-
-Just an alias for a 2d vector.
-Needs to be in a record because it will be passed as an
-attribute to the vertex shader
 
 ---
 
@@ -594,6 +556,47 @@ view : Game.TwoD.Camera.Camera -> ( Float, Float ) -> Math.Matrix4.Mat4
 
 Gets the transformation that represents how to transform the camera back to the origin.
 The result of this is used in the vertex shader.
+
+---
+```elm
+getViewSize : ( Float, Float ) -> Game.TwoD.Camera.Camera -> ( Float, Float )
+```
+
+Given the screen size, gets the width and height in game units
+
+---
+
+
+
+---
+
+# Game.TwoD.Shapes
+
+
+# Shapes for WebGL rendering.
+
+You don't need this module,
+unless you want to have a ready made square for a custom vertex shader.
+Since we're dealing with 2d only,
+the only available shape is a square
+
+```elm
+unitSquare : WebGL.Drawable Game.TwoD.Shapes.Vertex
+```
+
+A square with corners (0, 0), (1, 1)
+
+---
+
+
+```elm
+type alias Vertex = 
+  { a_position : Math.Vector2.Vec2 }
+```
+
+Just an alias for a 2d vector.
+Needs to be in a record because it will be passed as an
+attribute to the vertex shader
 
 ---
 

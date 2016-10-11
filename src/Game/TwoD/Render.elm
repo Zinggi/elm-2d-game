@@ -31,12 +31,12 @@ suggested import:
     import Game.TwoD.Render as Render exposing (Renderable)
 
 
-The functions to render something all come in 3 forms:
+Most functions to render something come in 3 forms:
 
     thing, thingZ, thingWithOptions
 
-The first is the most common one where you can only specify
-the size, the position in 2d and the color.
+The first is the most common one where you can specify
+the size, the position in 2d and some more.
 
 
 The second one is the same as the first, but with a 3d position.
@@ -62,13 +62,10 @@ Textures are `Maybe` values because you can never have a texture at the start of
 You first have to load your textures. In case you pass a `Nothing` as a value for a texture,
 A gray rectangle will be displayed instead.
 
-For loading textures I suggest keeping a dictionary of textures and then use your textures
-by calling `Dict.get "textureId" model.textures` as this already returns a Maybe value
-, making it a perfect fit to pass for the texture parameter.
+For loading textures I suggest using the [game-resources library](http://package.elm-lang.org/packages/Zinggi/elm-game-resources/latest).
 
-**NOTE**: Texture dimensions have to be in a power of 2, e.g. 2^n x 2^m, like 4x16, 16x16, 512x256, etc.
+**NOTE**: Texture dimensions have to be in a power of 2, e.g. (2^n)x(2^m), like 4x16, 16x16, 512x256, etc.
 If you try to use a non power of two texture, WebGL will spit out a bunch of warnings and display a black rectangle.
-
 
 @docs sprite
 @docs spriteZ
@@ -114,20 +111,14 @@ type Renderable
     = ColoredRectangle { transform : Mat4, color : Vec3 }
     | TexturedRectangle { transform : Mat4, texture : Texture, tileWH : Vec2 }
     | AnimatedSprite { transform : Mat4, texture : Texture, bottomLeft : Vec2, topRight : Vec2, duration : Float, numberOfFrames : Int }
-    | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec3, z : Float, offset : Vec2 }
+    | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec2, z : Float, offset : Vec2 }
     | Custom ({ cameraProj : Mat4, time : Float } -> WebGL.Renderable)
 
 
 {-|
-Just an alias for this crazy function, needed when you want to use customFragment
--}
-type alias MakeUniformsFunc a =
-    { cameraProj : Mat4, time : Float, transform : Mat4 }
-    -> { a | cameraProj : Mat4, transform : Mat4 }
-
-
-{-|
 Converts a Renderable to a WebGL.Renderable.
+You don't need this unless you want to slowely introduce
+this library in a project that currently uses WebGL directly.
 
     toWebGl time camera (w, h) cameraProj renderable
 -}
@@ -352,18 +343,18 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
 
 {-|
 Used for scrolling backgrounds.
-A scrollSpeed of 0.5 means that the background will scroll half as fast as the camera moves.
+This probably wont satisfy all possible needs for a scrolling background,
+but it can give you something that looks nice quickly.
 -}
 parallaxScroll : { o | scrollSpeed : Float2, z : Float, tileWH : Float2, texture : Maybe Texture } -> Renderable
 parallaxScroll { scrollSpeed, tileWH, texture, z } =
-    parallaxScrollWithOptions { scrollSpeed = scrollSpeed |> \( x, y ) -> ( x, y, 0 ), tileWH = tileWH, texture = texture, z = z, offset = ( 0.5, 0.5 ) }
+    parallaxScrollWithOptions { scrollSpeed = scrollSpeed, tileWH = tileWH, texture = texture, z = z, offset = ( 0.5, 0.5 ) }
 
 
 {-|
 Same but with an offset parameter that you can use to position the background.
-Plus scrollSpeed is 3d, the z component affects how the background reacts to the camera zoom.
 -}
-parallaxScrollWithOptions : { o | scrollSpeed : Float3, z : Float, tileWH : Float2, offset : Float2, texture : Maybe Texture } -> Renderable
+parallaxScrollWithOptions : { o | scrollSpeed : Float2, z : Float, tileWH : Float2, offset : Float2, texture : Maybe Texture } -> Renderable
 parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
     case texture of
         Nothing ->
@@ -371,12 +362,20 @@ parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
 
         Just t ->
             ParallaxScroll
-                { scrollSpeed = V3.fromTuple scrollSpeed
+                { scrollSpeed = V2.fromTuple scrollSpeed
                 , z = z
                 , tileWH = V2.fromTuple tileWH
                 , texture = t
                 , offset = V2.fromTuple offset
                 }
+
+
+{-|
+Just an alias for this crazy function, needed when you want to use customFragment
+-}
+type alias MakeUniformsFunc a =
+    { cameraProj : Mat4, time : Float, transform : Mat4 }
+    -> { a | cameraProj : Mat4, transform : Mat4 }
 
 
 {-|
@@ -389,7 +388,7 @@ For the fragment shader, you have the `vec2 varying vcoord;` variable available,
 which can be used to sample a texture (`texture2D(texture, vcoord);`)
 
 The `MakeUniformsFunc` allows you to pass along any additional uniforms you may need.
-This typically looks something like this:
+In practice, this might look something like this:
 
     makeUniforms {cameraProj, transform, time} =
         {cameraProj=cameraProj, transform=transform, time=time, myUniform=someVector}
@@ -403,9 +402,10 @@ This typically looks something like this:
     precision mediump float;
 
     varying vec2 vcoord;
+    uniform vec2 myUniform;
 
     void main () {
-      gl_FragColor = vcoord.yx;
+      gl_FragColor = vcoord.yx + myUniform;
     }
     |]
 
