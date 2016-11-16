@@ -153,9 +153,9 @@ follow : Float -> Float -> ( Float, Float ) -> Camera -> Camera
 follow speed dt target (Camera ({ position } as camera)) =
     let
         vectorToTarget =
-            (target `sub` position)
+            (sub target position)
 
         newPosition =
-            (position `add` (scale (speed * dt) vectorToTarget))
+            (add position (scale (speed * dt) vectorToTarget))
     in
         Camera { camera | position = newPosition }

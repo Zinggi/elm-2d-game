@@ -1,9 +1,6 @@
 module Game.Helpers exposing (..)
 
-import Color exposing (Color)
-import Math.Matrix4 as M4 exposing (Mat4)
 import Math.Vector3 as V3 exposing (Vec3, vec3)
-import Math.Vector4 as V4 exposing (Vec4, vec4)
 
 
 type alias Float2 =

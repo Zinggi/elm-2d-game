@@ -36,10 +36,20 @@ import Game.Helpers exposing (..)
 -}
 makeTransform : Float3 -> Float -> Float2 -> Float2 -> Mat4
 makeTransform ( x, y, z ) rotation ( w, h ) ( px, py ) =
-    (M4.makeTranslate ((vec3 x y z) `V3.add` (vec3 (abs w * px) (abs h * py) 0)))
-        `M4.mul` (M4.makeRotate rotation (vec3 0 0 1))
-        `M4.mul` (M4.makeScale (vec3 w h 1))
-        `M4.mul` (M4.makeTranslate (vec3 -px -py 0))
+    let
+        pivot =
+            M4.makeTranslate (V3.add (vec3 x y z) (vec3 (abs w * px) (abs h * py) 0))
+
+        rot =
+            M4.makeRotate rotation (vec3 0 0 1)
+
+        scale =
+            M4.makeScale (vec3 w h 1)
+
+        trans =
+            M4.makeTranslate (vec3 -px -py 0)
+    in
+        (M4.mul (M4.mul (M4.mul pivot rot) scale) trans)
 
 
 {-| -}

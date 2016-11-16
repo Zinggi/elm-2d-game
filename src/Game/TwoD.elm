@@ -77,11 +77,11 @@ renderWithOptions attributes { time, size, camera } objects =
         ( w, h ) =
             size
 
-        ( w', h' ) =
+        ( wf, hf ) =
             ( toFloat w, toFloat h )
 
         cameraProj =
-            Camera.view camera ( w', h' )
+            Camera.view camera ( wf, hf )
     in
         WebGL.toHtmlWith
             [ WebGL.Enable WebGL.Blend, WebGL.Enable WebGL.DepthTest, WebGL.BlendFunc ( WebGL.One, WebGL.OneMinusSrcAlpha ) ]
@@ -90,7 +90,7 @@ renderWithOptions attributes { time, size, camera } objects =
              ]
                 ++ attributes
             )
-            (List.reverse (List.map (Render.toWebGl time camera ( w', h' ) cameraProj) objects))
+            (List.reverse (List.map (Render.toWebGl time camera ( wf, hf ) cameraProj) objects))
 
 
 {-|
