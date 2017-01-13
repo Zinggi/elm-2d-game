@@ -94,6 +94,7 @@ Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 
 import Color exposing (Color)
 import WebGL exposing (Texture)
+import WebGL.Settings.Blend as Blend
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 as V2 exposing (Vec2, vec2)
 import Math.Vector3 as V3 exposing (Vec3)
@@ -112,33 +113,33 @@ type Renderable
     | TexturedRectangle { transform : Mat4, texture : Texture, tileWH : Vec2 }
     | AnimatedSprite { transform : Mat4, texture : Texture, bottomLeft : Vec2, topRight : Vec2, duration : Float, numberOfFrames : Int }
     | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec2, z : Float, offset : Vec2 }
-    | Custom ({ cameraProj : Mat4, time : Float } -> WebGL.Renderable)
+    | Custom ({ cameraProj : Mat4, time : Float } -> WebGL.Entity)
 
 
 {-|
-Converts a Renderable to a WebGL.Renderable.
+Converts a Renderable to a WebGL.Entity.
 You don't need this unless you want to slowely introduce
 this library in a project that currently uses WebGL directly.
 
     toWebGl time camera (w, h) cameraProj renderable
 -}
-toWebGl : Float -> Camera -> Float2 -> Mat4 -> Renderable -> WebGL.Renderable
+toWebGl : Float -> Camera -> Float2 -> Mat4 -> Renderable -> WebGL.Entity
 toWebGl time camera screenSize cameraProj object =
     case object of
         ColoredRectangle { transform, color } ->
-            WebGL.render vertColoredRect
+            WebGL.entity vertColoredRect
                 fragUniColor
                 unitSquare
                 { transform = transform, color = color, cameraProj = cameraProj }
 
         TexturedRectangle { transform, texture, tileWH } ->
-            WebGL.render vertTexturedRect
+            renderTransparent vertTexturedRect
                 fragTextured
                 unitSquare
                 { transform = transform, texture = texture, cameraProj = cameraProj, tileWH = tileWH }
 
         AnimatedSprite { transform, texture, bottomLeft, topRight, duration, numberOfFrames } ->
-            WebGL.render vertTexturedRect
+            renderTransparent vertTexturedRect
                 fragAnimTextured
                 unitSquare
                 { transform = transform, texture = texture, cameraProj = cameraProj, bottomLeft = bottomLeft, topRight = topRight, duration = duration, time = time, numberOfFrames = numberOfFrames }
@@ -151,7 +152,7 @@ toWebGl time camera screenSize cameraProj object =
                 pos =
                     Camera.getPosition camera
             in
-                WebGL.render vertParallaxScroll
+                renderTransparent vertParallaxScroll
                     fragTextured
                     unitSquare
                     { texture = texture, tileWH = tileWH, scrollSpeed = scrollSpeed, z = z, offset = offset, cameraPos = V2.fromTuple pos, cameraSize = V2.fromTuple size }
@@ -160,10 +161,17 @@ toWebGl time camera screenSize cameraProj object =
             f { cameraProj = cameraProj, time = time }
 
 
-
---renderTransparent =
---WebGL.renderWithConfig [ WebGL.Enable WebGL.Blend, WebGL.BlendFunc ( WebGL.One, WebGL.OneMinusSrcAlpha ) ]
---WebGL.renderWithConfig [ WebGL.Enable WebGL.Blend, WebGL.BlendFunc ( WebGL.SrcAlpha, WebGL.OneMinusSrcAlpha ) ]
+renderTransparent =
+    WebGL.entityWith
+        [ Blend.custom
+            { r = 0
+            , g = 0
+            , b = 0
+            , a = 0
+            , color = Blend.customAdd Blend.srcAlpha Blend.oneMinusSrcAlpha
+            , alpha = Blend.customAdd Blend.one Blend.oneMinusSrcAlpha
+            }
+        ]
 
 
 {-|
@@ -429,7 +437,7 @@ customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } 
     in
         Custom
             (\{ cameraProj, time } ->
-                WebGL.render vertTexturedRect
+                WebGL.entity vertTexturedRect
                     fragmentShader
                     unitSquare
                     (makeUniforms
@@ -448,13 +456,13 @@ If you use this you have to calculate your transformations yourself. (You can us
 If you need a square as attributes, you can take the one from Game.TwoD.Shapes
 
     veryCustom (\{cameraProj, time} ->
-        WebGL.render vert frag Shapes.unitSquare
+        WebGL.entity vert frag Shapes.unitSquare
           { u_crazyFrog = frogTexture
           , transform = Shaders.makeTransform (x, y, z) 0 (2, 4) (0, 0)
           , camera = cameraProj
           }
     )
 -}
-veryCustom : ({ cameraProj : Mat4, time : Float } -> WebGL.Renderable) -> Renderable
+veryCustom : ({ cameraProj : Mat4, time : Float } -> WebGL.Entity) -> Renderable
 veryCustom =
     Custom

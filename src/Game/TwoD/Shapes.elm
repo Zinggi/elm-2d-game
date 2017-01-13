@@ -13,7 +13,7 @@ the only available shape is a square
 @docs Vertex
 -}
 
-import WebGL exposing (Drawable)
+import WebGL exposing (Mesh)
 import Math.Vector2 exposing (Vec2, vec2)
 
 
@@ -23,15 +23,15 @@ Needs to be in a record because it will be passed as an
 attribute to the vertex shader
 -}
 type alias Vertex =
-    { a_position : Vec2 }
+    { position : Vec2 }
 
 
 {-|
 A square with corners (0, 0), (1, 1)
 -}
-unitSquare : Drawable Vertex
+unitSquare : Mesh Vertex
 unitSquare =
-    WebGL.Triangle
+    WebGL.triangles
         [ ( Vertex (vec2 0 0)
           , Vertex (vec2 0 1)
           , Vertex (vec2 1 0)

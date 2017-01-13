@@ -75,16 +75,16 @@ Can be generally used if the fragment shader needs to display texture(s).
 vertTexturedRect : Shader Vertex { u | transform : Mat4, cameraProj : Mat4 } { vcoord : Vec2 }
 vertTexturedRect =
     [glsl|
+attribute vec2 position;
 
-attribute vec2 a_position;
 uniform mat4 transform;
 uniform mat4 cameraProj;
 
 varying vec2 vcoord;
 void main () {
-    vec4 pos = cameraProj*transform*vec4(a_position, 0, 1);
+    vec4 pos = cameraProj*transform*vec4(position, 0, 1);
     gl_Position = pos;
-    vcoord = a_position.xy;
+    vcoord = position.xy;
 }
 |]
 
@@ -104,8 +104,7 @@ uniform vec2 tileWH;
 varying vec2 vcoord;
 
 void main () {
-    vec4 temp = texture2D(texture, vcoord*tileWH);
-    gl_FragColor = vec4(temp.xyz*temp.a, temp.a);
+    gl_FragColor = texture2D(texture, vcoord*tileWH);
 }
 |]
 
@@ -135,8 +134,7 @@ void main () {
     vec2 frameSize = vec2(stripSize.x / n, stripSize.y);
     vec2 texCoord = bottomLeft + vec2(frameSize.x * framePos, 0) + vcoord * frameSize;
 
-    vec4 temp = texture2D(texture, texCoord.xy);
-    gl_FragColor = vec4(temp.xyz*temp.a, temp.a);
+    gl_FragColor = texture2D(texture, texCoord.xy);
 }
 |]
 
@@ -149,14 +147,13 @@ it's only use is to create a colored rectangle.
 vertColoredRect : Shader Vertex { a | transform : Mat4, cameraProj : Mat4 } {}
 vertColoredRect =
     [glsl|
+attribute vec2 position;
 
-// the coordiantes of our box
-attribute vec2 a_position;
 uniform mat4 transform;
 uniform mat4 cameraProj;
 
 void main() {
-    gl_Position = cameraProj*transform*vec4(a_position, 0, 1);
+    gl_Position = cameraProj*transform*vec4(position, 0, 1);
 }
 |]
 
@@ -185,22 +182,24 @@ Good for background images.
 vertParallaxScroll : Shader Vertex { u | cameraPos : Vec2, cameraSize : Vec2, scrollSpeed : Vec2, z : Float, offset : Vec2 } { vcoord : Vec2 }
 vertParallaxScroll =
     [glsl|
-attribute vec2 a_position;
+attribute vec2 position;
+
 uniform vec2 cameraPos;
 uniform vec2 cameraSize;
 uniform vec2 scrollSpeed;
 uniform vec2 offset;
 uniform float z;
+
 varying vec2 vcoord;
 
 void main()
 {
     vcoord =
-        (a_position - vec2(0.5, 0.5)) // offset to middle of texture
+        (position - vec2(0.5, 0.5)) // offset to middle of texture
         * normalize(cameraSize) // scale to keep aspect ratio
         - offset // apply offset
         + cameraPos * 0.05 * scrollSpeed;
 
-    gl_Position = vec4(a_position*2.0 - vec2(1.0, 1.0), -z, 1);
+    gl_Position = vec4(position*2.0 - vec2(1.0, 1.0), -z, 1);
 }
 |]

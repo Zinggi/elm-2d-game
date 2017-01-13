@@ -84,13 +84,14 @@ renderWithOptions attributes { time, size, camera } objects =
             Camera.view camera ( wf, hf )
     in
         WebGL.toHtmlWith
-            [ WebGL.Enable WebGL.Blend, WebGL.Enable WebGL.DepthTest, WebGL.BlendFunc ( WebGL.One, WebGL.OneMinusSrcAlpha ) ]
+            -- TODO: Do we need the depth buffer? Is antialiasing actually desirable?
+            [ WebGL.alpha False, WebGL.depth 1, WebGL.antialias ]
             ([ Attr.width w
              , Attr.height h
              ]
                 ++ attributes
             )
-            (List.reverse (List.map (Render.toWebGl time camera ( wf, hf ) cameraProj) objects))
+            (List.map (Render.toWebGl time camera ( wf, hf ) cameraProj) objects)
 
 
 {-|

@@ -32,10 +32,6 @@ If you want to create a "real" game, I strongly recommend other options such as 
  * [Random tests](https://zinggi.github.io/elm-2d-game-examples/example1.html) / [src](https://github.com/Zinggi/elm-2d-game-examples/blob/master/example1.elm)
 
 
-## Docs
-[Generated docs](documentation.md) (thanks to [@lorenzo](https://github.com/lorenzo)'s [tool](https://gist.github.com/lorenzo/090a770de6ba43df092181c4a421c5d5)) until this is published on [package.elm-lang.com](package.elm-lang.com)
-
-
 ## Vision
 
 The vision for this library is to grow into something bigger.
