@@ -16,6 +16,7 @@ module Game.TwoD.Render
         , parallaxScroll
         , parallaxScrollWithOptions
         , toWebGl
+        , renderTransparent
         )
 
 {-|
@@ -89,6 +90,7 @@ Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 @docs customFragment
 @docs MakeUniformsFunc
 @docs veryCustom
+@docs renderTransparent
 @docs toWebGl
 -}
 
@@ -161,6 +163,10 @@ toWebGl time camera screenSize cameraProj object =
             f { cameraProj = cameraProj, time = time }
 
 
+{-| This can be used inside `veryCustom` instead of `WebGL.entity`.
+It's a custamized blend function that works well with textures with alpha.
+-}
+renderTransparent : WebGL.Shader attributes uniforms varyings -> WebGL.Shader {} uniforms varyings -> WebGL.Mesh attributes -> uniforms -> WebGL.Entity
 renderTransparent =
     WebGL.entityWith
         [ Blend.custom
@@ -437,7 +443,7 @@ customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } 
     in
         Custom
             (\{ cameraProj, time } ->
-                WebGL.entity vertTexturedRect
+                renderTransparent vertTexturedRect
                     fragmentShader
                     unitSquare
                     (makeUniforms
