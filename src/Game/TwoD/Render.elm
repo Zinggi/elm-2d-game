@@ -108,7 +108,7 @@ import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 as V2 exposing (Vec2, vec2)
 import Math.Vector3 as V3 exposing (Vec3)
 import Game.TwoD.Shaders exposing (..)
-import Game.TwoD.Shapes exposing (unitSquare)
+import Game.TwoD.Shapes exposing (unitSquare, unitTriangle)
 import Game.TwoD.Camera as Camera exposing (Camera)
 import Game.Helpers as Helpers exposing (..)
 
@@ -118,11 +118,19 @@ A representation of something that can be rendered.
 To actually render a `Renderable` onto a web page use the `Game.TwoD.*` functions
 -}
 type Renderable
-    = ColoredRectangle { transform : Mat4, color : Vec3 }
+    = ColoredShape { shape : BasicShape, transform : Mat4, color : Vec3 }
     | TexturedRectangle { transform : Mat4, texture : Texture, tileWH : Vec2 }
     | AnimatedSprite { transform : Mat4, texture : Texture, bottomLeft : Vec2, topRight : Vec2, duration : Float, numberOfFrames : Int }
     | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec2, z : Float, offset : Vec2 }
     | Custom ({ cameraProj : Mat4, time : Float } -> WebGL.Entity)
+
+
+{-|
+A representation of basic shapes that are used when rendering a ColoredShape
+-}
+type BasicShape
+    = Rectangle
+    | Triangle
 
 
 {-|
@@ -135,11 +143,8 @@ this library in a project that currently uses WebGL directly.
 toWebGl : Float -> Camera -> Float2 -> Mat4 -> Renderable -> WebGL.Entity
 toWebGl time camera screenSize cameraProj object =
     case object of
-        ColoredRectangle { transform, color } ->
-            WebGL.entity vertColoredRect
-                fragUniColor
-                unitSquare
-                { transform = transform, color = color, cameraProj = cameraProj }
+        ColoredShape { shape, transform, color } ->
+            shapeToWebGl shape transform cameraProj color
 
         TexturedRectangle { transform, texture, tileWH } ->
             renderTransparent vertTexturedRect
@@ -168,6 +173,25 @@ toWebGl time camera screenSize cameraProj object =
 
         Custom f ->
             f { cameraProj = cameraProj, time = time }
+
+
+{-|
+This takes a BasicShape Renderable and converts it to a WebGL.Entity.
+-}
+shapeToWebGl : BasicShape -> Mat4 -> Mat4 -> Vec3 -> WebGL.Entity
+shapeToWebGl shape transform cameraProj color =
+    case shape of
+        Rectangle ->
+            WebGL.entity vertColoredShape
+                fragUniColor
+                unitSquare
+                { transform = transform, color = color, cameraProj = cameraProj }
+
+        Triangle ->
+            WebGL.entity vertColoredShape
+                fragUniColor
+                unitTriangle
+                { transform = transform, color = color, cameraProj = cameraProj }
 
 
 {-| This can be used inside `veryCustom` instead of `WebGL.entity`.
