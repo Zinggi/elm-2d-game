@@ -4,6 +4,9 @@ module Game.TwoD.Render
         , rectangle
         , rectangleZ
         , rectangleWithOptions
+        , triangle
+        , triangleZ
+        , triangleWithOptions
         , sprite
         , spriteZ
         , spriteWithOptions
@@ -56,6 +59,10 @@ TODO: insert picture to visualize coordinate system.
 @docs rectangle
 @docs rectangleZ
 @docs rectangleWithOptions
+## Rectangles
+@docs triangle
+@docs triangleZ
+@docs triangleWithOptions
 
 ### With texture
 
@@ -212,8 +219,48 @@ rectangleWithOptions { color, rotation, position, size, pivot } =
         ( ( px, py ), ( w, h ), ( x, y, z ) ) =
             ( pivot, size, position )
     in
-        ColoredRectangle
-            { transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
+        ColoredShape
+            { shape = Rectangle
+            , transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
+            , color = colorToRGBVector color
+            }
+
+
+{-|
+A colored triangle, great for prototyping
+-}
+triangle : { o | color : Color, position : Float2, size : Float2 } -> Renderable
+triangle { size, position, color } =
+    let
+        ( x, y ) =
+            position
+    in
+        triangleZ { size = size, position = ( x, y, 0 ), color = color }
+
+
+{-|
+The same, but with 3d position.
+-}
+triangleZ : { o | color : Color, position : Float3, size : Float2 } -> Renderable
+triangleZ { color, position, size } =
+    triangleWithOptions
+        { color = color, position = position, size = size, rotation = 0, pivot = ( 0, 0 ) }
+
+
+{-|
+A colored triangle, that can also be rotated
+-}
+triangleWithOptions :
+    { o | color : Color, position : Float3, size : Float2, rotation : Float, pivot : Float2 }
+    -> Renderable
+triangleWithOptions { color, rotation, position, size, pivot } =
+    let
+        ( ( px, py ), ( w, h ), ( x, y, z ) ) =
+            ( pivot, size, position )
+    in
+        ColoredShape
+            { shape = Triangle
+            , transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
             , color = colorToRGBVector color
             }
 
