@@ -10,7 +10,7 @@ and a shader from here already provides one half.
 Or if you're using WebGL directly.
 
 ## Vertex shaders
-@docs vertColoredRect, vertTexturedRect, vertParallaxScroll
+@docs vertColoredShape, vertTexturedRect, vertParallaxScroll
 
 ## Fragment shaders
 @docs fragTextured, fragAnimTextured, fragUniColor
@@ -140,12 +140,12 @@ void main () {
 
 
 {-|
-The most basic shader, renders a rectangle.
+The most basic shader, renders a basic shape.
 Since it doesn't even pass along the texture coordinates,
-it's only use is to create a colored rectangle.
+it's only use is to create a colored shape.
 -}
-vertColoredRect : Shader Vertex { a | transform : Mat4, cameraProj : Mat4 } {}
-vertColoredRect =
+vertColoredShape : Shader Vertex { a | transform : Mat4, cameraProj : Mat4 } {}
+vertColoredShape =
     [glsl|
 attribute vec2 position;
 
