@@ -482,7 +482,7 @@ In practice, this might look something like this:
         customFragment makeUniforms { fragmentShader=frag, position=p, size=s, rotation=0, pivot=(0,0) }
 
     frag =
-        [|glsl
+        [glsl|
 
     precision mediump float;
 
