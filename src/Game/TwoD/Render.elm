@@ -1,12 +1,12 @@
 module Game.TwoD.Render
     exposing
         ( Renderable
+        , BasicShape
         , rectangle
-        , rectangleZ
-        , rectangleWithOptions
         , triangle
-        , triangleZ
-        , triangleWithOptions
+        , shape
+        , shapeZ
+        , shapeWithOptions
         , sprite
         , spriteZ
         , spriteWithOptions
@@ -27,8 +27,8 @@ module Game.TwoD.Render
 This module provides a way to render commonly used objects in 2d games
 like simple sprites and sprite animations.
 
-It also provides colored rectangles which can be great during prototyping.
-The simple rectangles can easily be replaced by nicer looking textures later.
+It also provides colored shapes which can be great during prototyping.
+The simple shapes can easily be replaced by nicer looking textures later.
 
 suggested import:
 
@@ -55,14 +55,13 @@ TODO: insert picture to visualize coordinate system.
 
 @docs Renderable
 
-## Rectangles
-@docs rectangle
-@docs rectangleZ
-@docs rectangleWithOptions
-## Rectangles
-@docs triangle
-@docs triangleZ
-@docs triangleWithOptions
+## Basic Shapes
+@docs BasicShape, rectangle, triangle
+
+## Shapes
+@docs shape
+@docs shapeZ
+@docs shapeWithOptions
 
 ### With texture
 
@@ -126,11 +125,25 @@ type Renderable
 
 
 {-|
-A representation of basic shapes that are used when rendering a ColoredShape
+A representation of a basic shape to use when rendering a ColoredShape
 -}
 type BasicShape
     = Rectangle
     | Triangle
+
+
+{-| BasicShape constructor for a rectangle
+-}
+rectangle : BasicShape
+rectangle =
+    Rectangle
+
+
+{-| BasicShape constructor for a triangle
+-}
+triangle : BasicShape
+triangle =
+    Triangle
 
 
 {-|
@@ -212,78 +225,41 @@ renderTransparent =
 
 
 {-|
-A colored rectangle, great for prototyping
+A colored shape, great for prototyping
 -}
-rectangle : { o | color : Color, position : Float2, size : Float2 } -> Renderable
-rectangle { size, position, color } =
+shape : BasicShape -> { o | color : Color, position : Float2, size : Float2 } -> Renderable
+shape shape { size, position, color } =
     let
         ( x, y ) =
             position
     in
-        rectangleZ { size = size, position = ( x, y, 0 ), color = color }
+        shapeZ shape { size = size, position = ( x, y, 0 ), color = color }
 
 
 {-|
 The same, but with 3d position.
 -}
-rectangleZ : { o | color : Color, position : Float3, size : Float2 } -> Renderable
-rectangleZ { color, position, size } =
-    rectangleWithOptions
+shapeZ : BasicShape -> { o | color : Color, position : Float3, size : Float2 } -> Renderable
+shapeZ shape { color, position, size } =
+    shapeWithOptions
+        shape
         { color = color, position = position, size = size, rotation = 0, pivot = ( 0, 0 ) }
 
 
 {-|
-A colored rectangle, that can also be rotated
+A colored shape, that can also be rotated
 -}
-rectangleWithOptions :
-    { o | color : Color, position : Float3, size : Float2, rotation : Float, pivot : Float2 }
+shapeWithOptions :
+    BasicShape
+    -> { o | color : Color, position : Float3, size : Float2, rotation : Float, pivot : Float2 }
     -> Renderable
-rectangleWithOptions { color, rotation, position, size, pivot } =
+shapeWithOptions shape { color, rotation, position, size, pivot } =
     let
         ( ( px, py ), ( w, h ), ( x, y, z ) ) =
             ( pivot, size, position )
     in
         ColoredShape
-            { shape = Rectangle
-            , transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
-            , color = colorToRGBVector color
-            }
-
-
-{-|
-A colored triangle, great for prototyping
--}
-triangle : { o | color : Color, position : Float2, size : Float2 } -> Renderable
-triangle { size, position, color } =
-    let
-        ( x, y ) =
-            position
-    in
-        triangleZ { size = size, position = ( x, y, 0 ), color = color }
-
-
-{-|
-The same, but with 3d position.
--}
-triangleZ : { o | color : Color, position : Float3, size : Float2 } -> Renderable
-triangleZ { color, position, size } =
-    triangleWithOptions
-        { color = color, position = position, size = size, rotation = 0, pivot = ( 0, 0 ) }
-
-
-{-|
-A colored triangle, that can also be rotated
--}
-triangleWithOptions :
-    { o | color : Color, position : Float3, size : Float2, rotation : Float, pivot : Float2 }
-    -> Renderable
-triangleWithOptions { color, rotation, position, size, pivot } =
-    let
-        ( ( px, py ), ( w, h ), ( x, y, z ) ) =
-            ( pivot, size, position )
-    in
-        ColoredShape
-            { shape = Triangle
+            { shape = shape
             , transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
             , color = colorToRGBVector color
             }
@@ -335,7 +311,7 @@ spriteWithOptions ({ texture, position, size, tiling, rotation, pivot } as args)
                     }
 
             Nothing ->
-                rectangleZ { position = position, size = size, color = Color.grey }
+                shapeZ Rectangle { position = position, size = size, color = Color.grey }
 
 
 {-|
@@ -413,7 +389,7 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
     in
         case texture of
             Nothing ->
-                rectangleZ { position = position, size = size, color = Color.grey }
+                shapeZ Rectangle { position = position, size = size, color = Color.grey }
 
             Just tex ->
                 AnimatedSprite
@@ -443,7 +419,7 @@ parallaxScrollWithOptions : { o | scrollSpeed : Float2, z : Float, tileWH : Floa
 parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
     case texture of
         Nothing ->
-            rectangleZ { position = ( 0, 0, z ), size = ( 1, 1 ), color = Color.grey }
+            shapeZ Rectangle { position = ( 0, 0, z ), size = ( 1, 1 ), color = Color.grey }
 
         Just t ->
             ParallaxScroll
