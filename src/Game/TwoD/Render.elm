@@ -104,6 +104,7 @@ Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 import Color exposing (Color)
 import WebGL exposing (Texture)
 import WebGL.Settings.Blend as Blend
+import WebGL.Settings
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 as V2 exposing (Vec2, vec2)
 import Math.Vector3 as V3 exposing (Vec3)
@@ -216,7 +217,7 @@ shapeToWebGl shape transform cameraProj color =
                 { transform = transform, color = color, cameraProj = cameraProj }
 
         Circle ->
-            WebGL.entity vertColoredShape
+            renderTransparent vertColoredShape
                 fragUniColorCircle
                 unitSquare
                 { transform = transform, color = color, cameraProj = cameraProj }
