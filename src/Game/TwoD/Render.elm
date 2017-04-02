@@ -205,13 +205,13 @@ shapeToWebGl : BasicShape -> Mat4 -> Mat4 -> Vec3 -> WebGL.Entity
 shapeToWebGl shape transform cameraProj color =
     case shape of
         Rectangle ->
-            WebGL.entity vertColoredShape
+            renderTransparent vertColoredShape
                 fragUniColor
                 unitSquare
                 { transform = transform, color = color, cameraProj = cameraProj }
 
         Triangle ->
-            WebGL.entity vertColoredShape
+            renderTransparent vertColoredShape
                 fragUniColor
                 unitTriangle
                 { transform = transform, color = color, cameraProj = cameraProj }
