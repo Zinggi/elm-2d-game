@@ -4,6 +4,7 @@ module Game.TwoD.Render
         , BasicShape
         , rectangle
         , triangle
+        , circle
         , shape
         , shapeZ
         , shapeWithOptions
@@ -56,7 +57,7 @@ TODO: insert picture to visualize coordinate system.
 @docs Renderable
 
 ## Basic Shapes
-@docs BasicShape, rectangle, triangle
+@docs BasicShape, rectangle, triangle, circle
 
 ## Shapes
 @docs shape
@@ -130,6 +131,7 @@ A representation of a basic shape to use when rendering a ColoredShape
 type BasicShape
     = Rectangle
     | Triangle
+    | Circle
 
 
 {-| BasicShape constructor for a rectangle
@@ -144,6 +146,13 @@ rectangle =
 triangle : BasicShape
 triangle =
     Triangle
+
+
+{-| BasicShape constructor for a circle
+-}
+circle : BasicShape
+circle =
+    Circle
 
 
 {-|
@@ -204,6 +213,12 @@ shapeToWebGl shape transform cameraProj color =
             WebGL.entity vertColoredShape
                 fragUniColor
                 unitTriangle
+                { transform = transform, color = color, cameraProj = cameraProj }
+
+        Circle ->
+            WebGL.entity vertColoredShape
+                fragUniColorCircle
+                unitSquare
                 { transform = transform, color = color, cameraProj = cameraProj }
 
 

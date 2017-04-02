@@ -13,7 +13,7 @@ Or if you're using WebGL directly.
 @docs vertColoredShape, vertTexturedRect, vertParallaxScroll
 
 ## Fragment shaders
-@docs fragTextured, fragAnimTextured, fragUniColor
+@docs fragTextured, fragAnimTextured, fragUniColor, fragUniColorCircle
 
 ---
 ### useful helper functions
@@ -144,16 +144,17 @@ The most basic shader, renders a basic shape.
 Since it doesn't even pass along the texture coordinates,
 it's only use is to create a colored shape.
 -}
-vertColoredShape : Shader Vertex { a | transform : Mat4, cameraProj : Mat4 } {}
+vertColoredShape : Shader Vertex { a | transform : Mat4, cameraProj : Mat4 } { vcoord : Vec2 }
 vertColoredShape =
     [glsl|
 attribute vec2 position;
 
 uniform mat4 transform;
 uniform mat4 cameraProj;
-
+varying vec2 vcoord;
 void main() {
     gl_Position = cameraProj*transform*vec4(position, 0, 1);
+    vcoord = position.xy;
 }
 |]
 
@@ -161,16 +162,41 @@ void main() {
 {-|
 A very simple shader, coloring the whole area in a single color
 -}
-fragUniColor : Shader {} { u | color : Vec3 } {}
+fragUniColor : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
 fragUniColor =
     [glsl|
 
 precision mediump float;
 
 uniform vec3 color;
+varying vec2 vcoord;
 
 void main() {
     gl_FragColor = vec4(color, 1);
+}
+|]
+
+
+{-|
+A fragment Shader for rendering a single colored circle
+-}
+fragUniColorCircle : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
+fragUniColorCircle =
+    [glsl|
+
+precision mediump float;
+
+uniform vec3 color;
+varying vec2 vcoord;
+
+void main () {
+  float dist = length(vec2(0.5, 0.5) - vcoord);
+
+  float alpha = smoothstep(0.5 - 0.01, 0.5, dist);
+  vec4 color = vec4(color, 1.0 - alpha);
+
+
+  gl_FragColor = color;
 }
 |]
 
