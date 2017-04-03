@@ -13,7 +13,7 @@ Or if you're using WebGL directly.
 @docs vertColoredShape, vertTexturedRect, vertParallaxScroll
 
 ## Fragment shaders
-@docs fragTextured, fragAnimTextured, fragUniColor, fragUniColorCircle
+@docs fragTextured, fragAnimTextured, fragUniColor, fragUniColorCircle, fragUniColorRing
 
 ---
 ### useful helper functions
@@ -195,6 +195,28 @@ void main () {
   float alpha = smoothstep(0.5 - 0.01, 0.5, dist);
   vec4 color = vec4(color, 1.0 - alpha);
 
+  gl_FragColor = color;
+}
+|]
+
+
+{-|
+A fragment Shader for rendering a transparent circle with a colored border
+-}
+fragUniColorRing : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
+fragUniColorRing =
+    [glsl|
+
+precision mediump float;
+
+uniform vec3 color;
+varying vec2 vcoord;
+
+void main () {
+  float dist = length(vec2(0.5, 0.5) - vcoord);
+
+  float alpha = smoothstep(0.5, 0.5 - 0.01, dist) * smoothstep(0.49 - 0.01, 0.49, dist);
+  vec4 color = vec4(color, alpha);
 
   gl_FragColor = color;
 }

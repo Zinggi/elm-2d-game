@@ -5,6 +5,7 @@ module Game.TwoD.Render
         , rectangle
         , triangle
         , circle
+        , ring
         , shape
         , shapeZ
         , shapeWithOptions
@@ -57,7 +58,7 @@ TODO: insert picture to visualize coordinate system.
 @docs Renderable
 
 ## Basic Shapes
-@docs BasicShape, rectangle, triangle, circle
+@docs BasicShape, rectangle, triangle, circle, ring
 
 ## Shapes
 @docs shape
@@ -133,6 +134,7 @@ type BasicShape
     = Rectangle
     | Triangle
     | Circle
+    | Ring
 
 
 {-| BasicShape constructor for a rectangle
@@ -154,6 +156,13 @@ triangle =
 circle : BasicShape
 circle =
     Circle
+
+
+{-| BasicShape constructor for a ring
+-}
+ring : BasicShape
+ring =
+    Ring
 
 
 {-|
@@ -219,6 +228,12 @@ shapeToWebGl shape transform cameraProj color =
         Circle ->
             renderTransparent vertColoredShape
                 fragUniColorCircle
+                unitSquare
+                { transform = transform, color = color, cameraProj = cameraProj }
+
+        Ring ->
+            renderTransparent vertColoredShape
+                fragUniColorRing
                 unitSquare
                 { transform = transform, color = color, cameraProj = cameraProj }
 
