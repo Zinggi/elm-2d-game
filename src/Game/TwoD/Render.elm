@@ -71,7 +71,7 @@ A gray rectangle will be displayed instead.
 For loading textures I suggest using the [game-resources library](http://package.elm-lang.org/packages/Zinggi/elm-game-resources/latest).
 
 **NOTE**: Texture dimensions should be a power of 2, e.g. (2^n)x(2^m), like 4x16, 16x16, 512x256, etc.
-Non power of two texture are possible, but [not encouraged](http://package.elm-lang.org/packages/elm-community/webgl/2.0.1/WebGL-Texture#Error).
+Non power of two texture are possible, but [not encouraged](http://package.elm-lang.org/packages/elm-community/webgl/latest/WebGL-Texture#Error).
 
 @docs sprite, spriteZ, spriteWithOptions
 
@@ -153,7 +153,7 @@ ring =
 
 {-|
 Converts a Renderable to a WebGL.Entity.
-You don't need this unless you want to slowely introduce
+You don't need this unless you want to slowly introduce
 this library in a project that currently uses WebGL directly.
 
     toWebGl time camera (w, h) renderable
@@ -164,7 +164,7 @@ toWebGl time camera screenSize (Renderable f) =
 
 
 {-| This can be used inside `veryCustom` instead of `WebGL.entity`.
-It's a custamized blend function that works well with textures with alpha.
+It's a customized blend function that works well with textures with alpha.
 -}
 renderTransparent : WebGL.Shader attributes uniforms varyings -> WebGL.Shader {} uniforms varyings -> WebGL.Mesh attributes -> uniforms -> WebGL.Entity
 renderTransparent =
@@ -429,12 +429,15 @@ type alias MakeUniformsFunc a =
 
 {-|
 This allows you to write your own custom fragment shader.
+To learn about writing shaders, I recommend [this free book](https://thebookofshaders.com/00/).
+
 The type signature may look terrifying,
 but this is still easier than using veryCustom or using WebGL directly.
 It handles the vertex shader for you, e.g. your object will appear at the expected location once rendered.
 
 For the fragment shader, you have the `vec2 varying vcoord;` variable available,
-which can be used to sample a texture (`texture2D(texture, vcoord);`)
+which can be used to sample a texture (`texture2D(texture, vcoord);`).
+It's a vector that goes from (0,0) to (1,1)
 
 The `MakeUniformsFunc` allows you to pass along any additional uniforms you may need.
 In practice, this might look something like this:
@@ -461,7 +464,7 @@ In practice, this might look something like this:
 
 Don't pass the time along if your shader doesn't need it.
 
-Here is a small exmple that draws a circle:
+Here is a small example that draws a circle:
 https://ellie-app.com/LSTb2NnkDWa1/0
 -}
 customFragment :
@@ -498,7 +501,7 @@ If you use this you have to calculate the transformations yourself. (You can use
 If you need a square as attributes, you can take the one from Game.TwoD.Shapes
 
     veryCustom (\{camera, screenSize, time} ->
-        WebGL.entity vert frag Shapes.unitSquare
+        WebGL.entity myVert myFrag Shapes.unitSquare
           { u_crazyFrog = frogTexture
           , transform = Shaders.makeTransform (x, y, z) 0 (2, 4) (0, 0)
           , cameraProj = Camera.view camera screenSize

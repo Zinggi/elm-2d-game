@@ -44,6 +44,14 @@ However, the idea is that each of the mentioned missing topics can be created as
 
 ## Update log
 
+* ** 2.0.0 -> 3.0.0 **
+    * **Breaking changes:**
+        - Removed `rectangle`. Use `shape rectangle` instead
+        - Changed what the pivot affects.
+        Previously, the pivot only affected the center of rotation. Now it also affects the offset in position. If you want the previous behavior, use `(x - px*w, y - py*h)` instead of `(px, py)` for position. TODO: fact check that!
+    * ** New stuff: **
+        - Added more prototyping shapes, thanks to [@yourSenchou](https://github.com/yourSenchou).
+
 * **1.0.1 -> 2.0.0**
-    * Updated to webgl 2.0.
+    * Updated to WebGL 2.0.
     * Renamed Vertex attribute `a_position` to `position`

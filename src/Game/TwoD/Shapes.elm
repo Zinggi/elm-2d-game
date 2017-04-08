@@ -5,8 +5,9 @@ module Game.TwoD.Shapes exposing (unitSquare, unitTriangle, Vertex)
 
 You don't need this module,
 unless you want to have a ready made square for a custom vertex shader.
-Since we're dealing with 2d only,
-the only available shape is a square
+
+Pretty much anything can be created using a single square.
+If you don't believe me, see [here](http://iquilezles.org/index.html).
 
 @docs unitSquare
 @docs unitTriangle

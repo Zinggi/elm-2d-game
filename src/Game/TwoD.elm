@@ -64,8 +64,8 @@ render =
 
 {-|
 Same as above, but you can specify additional attributes that will be passed to the canvas element.
-A useful trick to save some gpu processing at the cost of image quality is
-to use a smaller `size` argument and than scale the canvas with css. e.g.
+A useful trick to save some GPU processing at the cost of image quality is
+to use a smaller `size` argument and than scale the canvas with CSS. e.g.
 
     renderWithOptions [style [("width", "800px"), ("height", "600px")]]
         { time = time, size = (400, 300), camera = camera }

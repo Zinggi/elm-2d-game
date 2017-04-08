@@ -1,10 +1,7 @@
 module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, custom, view, getViewSize, getPosition, follow, moveBy, moveTo)
 
 {-|
-This provides a basic camera.
-
-You can also create your own camera type if you wish.
-To do so, have a look at the source of this file.
+A camera to view the game world.
 
 ## camera creation
 @docs Camera, fixedArea, fixedWidth, fixedHeight, custom
@@ -56,12 +53,13 @@ fixedHeight h pos =
 {-|
 A camera that always shows the same area.
 This is useful in a top down game.
-This means that you probably want to specify the area property like this:
+You probably want to specify the area as a multiplication of width and height:
 
     fixedArea (16*10) (x, y)
 
-This would show 16 by 10 units IF the game is displayed in a 16:10 viewport.
-But in a 4:3 viewport it would show sqrt(16*10*4/3)=14.6 by sqrt(16*10*3/4)=10.95 units.
+This means the camera will always show 160 square units of your game.
+In practice, this means that on a 16:10 viewport, 16 by 10 units of your game will be visible.
+But on a 4:3 viewport it would show 14.6 by 10.95 units. (sqrt(16*10*4/3)=14.6, sqrt(16*10*3/4)=10.95)
 -}
 fixedArea : Float -> ( Float, Float ) -> Camera
 fixedArea a pos =
