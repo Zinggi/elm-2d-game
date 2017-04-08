@@ -38,7 +38,8 @@ makeTransform : Float3 -> Float -> Float2 -> Float2 -> Mat4
 makeTransform ( x, y, z ) rotation ( w, h ) ( px, py ) =
     let
         pivot =
-            M4.makeTranslate (V3.add (vec3 x y z) (vec3 (abs w * px) (abs h * py) 0))
+            {- (V3.add (vec3 x y z) (vec3 (abs w * px) (abs h * py) 0)) -}
+            M4.makeTranslate (vec3 x y z)
 
         rot =
             M4.makeRotate rotation (vec3 0 0 1)

@@ -48,7 +48,10 @@ However, the idea is that each of the mentioned missing topics can be created as
     * **Breaking changes:**
         - Removed `rectangle`. Use `shape rectangle` instead
         - Changed what the pivot affects.
-        Previously, the pivot only affected the center of rotation. Now it also affects the offset in position. If you want the previous behavior, use `(x - px*w, y - py*h)` instead of `(px, py)` for position. TODO: fact check that!
+        Previously, the pivot only affected the center of rotation.
+        The pivot now also affects where position refers to.
+        For instance, a pivot of (0.5, 0) means that the position parameter of the object now refers to its bottom center.   
+        If you want the previous behavior, use `(x + pivotX*w, y + pivotY*h)` instead of `(x, y)` for position.
     * ** New stuff: **
         - Added more prototyping shapes, thanks to [@yourSenchou](https://github.com/yourSenchou).
 
