@@ -10,10 +10,10 @@ and a shader from here already provides one half.
 Or if you're using WebGL directly.
 
 ## Vertex shaders
-@docs vertColoredRect, vertTexturedRect, vertParallaxScroll
+@docs vertColoredShape, vertTexturedRect, vertParallaxScroll
 
 ## Fragment shaders
-@docs fragTextured, fragAnimTextured, fragUniColor
+@docs fragTextured, fragAnimTextured, fragUniColor, fragUniColorCircle, fragUniColorRing
 
 ---
 ### useful helper functions
@@ -140,20 +140,21 @@ void main () {
 
 
 {-|
-The most basic shader, renders a rectangle.
+The most basic shader, renders a basic shape.
 Since it doesn't even pass along the texture coordinates,
-it's only use is to create a colored rectangle.
+it's only use is to create a colored shape.
 -}
-vertColoredRect : Shader Vertex { a | transform : Mat4, cameraProj : Mat4 } {}
-vertColoredRect =
+vertColoredShape : Shader Vertex { a | transform : Mat4, cameraProj : Mat4 } { vcoord : Vec2 }
+vertColoredShape =
     [glsl|
 attribute vec2 position;
 
 uniform mat4 transform;
 uniform mat4 cameraProj;
-
+varying vec2 vcoord;
 void main() {
     gl_Position = cameraProj*transform*vec4(position, 0, 1);
+    vcoord = position.xy;
 }
 |]
 
@@ -161,16 +162,63 @@ void main() {
 {-|
 A very simple shader, coloring the whole area in a single color
 -}
-fragUniColor : Shader {} { u | color : Vec3 } {}
+fragUniColor : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
 fragUniColor =
     [glsl|
 
 precision mediump float;
 
 uniform vec3 color;
+varying vec2 vcoord;
 
 void main() {
     gl_FragColor = vec4(color, 1);
+}
+|]
+
+
+{-|
+A fragment Shader for rendering a single colored circle
+-}
+fragUniColorCircle : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
+fragUniColorCircle =
+    [glsl|
+
+precision mediump float;
+
+uniform vec3 color;
+varying vec2 vcoord;
+
+void main () {
+  float dist = length(vec2(0.5, 0.5) - vcoord);
+
+  float alpha = smoothstep(0.5 - 0.01, 0.5, dist);
+  vec4 color = vec4(color, 1.0 - alpha);
+
+  gl_FragColor = color;
+}
+|]
+
+
+{-|
+A fragment Shader for rendering a transparent circle with a colored border
+-}
+fragUniColorRing : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
+fragUniColorRing =
+    [glsl|
+
+precision mediump float;
+
+uniform vec3 color;
+varying vec2 vcoord;
+
+void main () {
+  float dist = length(vec2(0.5, 0.5) - vcoord);
+
+  float alpha = smoothstep(0.5, 0.5 - 0.01, dist) * smoothstep(0.49 - 0.01, 0.49, dist);
+  vec4 color = vec4(color, alpha);
+
+  gl_FragColor = color;
 }
 |]
 
