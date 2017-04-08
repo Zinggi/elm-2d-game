@@ -79,9 +79,6 @@ renderWithOptions attributes { time, size, camera } objects =
 
         ( wf, hf ) =
             ( toFloat w, toFloat h )
-
-        cameraProj =
-            Camera.view camera ( wf, hf )
     in
         WebGL.toHtmlWith
             -- TODO: Do we need the depth buffer? Is antialiasing actually desirable?
@@ -91,7 +88,7 @@ renderWithOptions attributes { time, size, camera } objects =
              ]
                 ++ attributes
             )
-            (List.map (Render.toWebGl time camera ( wf, hf ) cameraProj) objects)
+            (List.map (Render.toWebGl time camera ( wf, hf )) objects)
 
 
 {-|

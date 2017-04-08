@@ -65,8 +65,8 @@ A gray rectangle will be displayed instead.
 
 For loading textures I suggest using the [game-resources library](http://package.elm-lang.org/packages/Zinggi/elm-game-resources/latest).
 
-**NOTE**: Texture dimensions have to be in a power of 2, e.g. (2^n)x(2^m), like 4x16, 16x16, 512x256, etc.
-If you try to use a non power of two texture, WebGL will spit out a bunch of warnings and display a black rectangle.
+**NOTE**: Texture dimensions should be a power of 2, e.g. (2^n)x(2^m), like 4x16, 16x16, 512x256, etc.
+Non power of two texture are possible, but [not encouraged](http://package.elm-lang.org/packages/elm-community/webgl/2.0.1/WebGL-Texture#Error).
 
 @docs sprite
 @docs spriteZ
@@ -99,7 +99,6 @@ import WebGL exposing (Texture)
 import WebGL.Settings.Blend as Blend
 import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 as V2 exposing (Vec2, vec2)
-import Math.Vector3 as V3 exposing (Vec3)
 import Game.TwoD.Shaders exposing (..)
 import Game.TwoD.Shapes exposing (unitSquare)
 import Game.TwoD.Camera as Camera exposing (Camera)
@@ -111,73 +110,7 @@ A representation of something that can be rendered.
 To actually render a `Renderable` onto a web page use the `Game.TwoD.*` functions
 -}
 type Renderable
-    = ColoredRectangle { transform : Mat4, color : Vec3 }
-    | TexturedRectangle { transform : Mat4, texture : Texture, tileWH : Vec2 }
-    | AnimatedSprite { transform : Mat4, texture : Texture, bottomLeft : Vec2, topRight : Vec2, duration : Float, numberOfFrames : Int }
-    | ParallaxScroll { texture : Texture, tileWH : Vec2, scrollSpeed : Vec2, z : Float, offset : Vec2 }
-    | Custom ({ cameraProj : Mat4, time : Float } -> WebGL.Entity)
-
-
-{-|
-Converts a Renderable to a WebGL.Entity.
-You don't need this unless you want to slowely introduce
-this library in a project that currently uses WebGL directly.
-
-    toWebGl time camera (w, h) cameraProj renderable
--}
-toWebGl : Float -> Camera -> Float2 -> Mat4 -> Renderable -> WebGL.Entity
-toWebGl time camera screenSize cameraProj object =
-    case object of
-        ColoredRectangle { transform, color } ->
-            WebGL.entity vertColoredRect
-                fragUniColor
-                unitSquare
-                { transform = transform, color = color, cameraProj = cameraProj }
-
-        TexturedRectangle { transform, texture, tileWH } ->
-            renderTransparent vertTexturedRect
-                fragTextured
-                unitSquare
-                { transform = transform, texture = texture, cameraProj = cameraProj, tileWH = tileWH }
-
-        AnimatedSprite { transform, texture, bottomLeft, topRight, duration, numberOfFrames } ->
-            renderTransparent vertTexturedRect
-                fragAnimTextured
-                unitSquare
-                { transform = transform, texture = texture, cameraProj = cameraProj, bottomLeft = bottomLeft, topRight = topRight, duration = duration, time = time, numberOfFrames = numberOfFrames }
-
-        ParallaxScroll { texture, tileWH, scrollSpeed, z, offset } ->
-            let
-                size =
-                    Camera.getViewSize screenSize camera
-
-                pos =
-                    Camera.getPosition camera
-            in
-                renderTransparent vertParallaxScroll
-                    fragTextured
-                    unitSquare
-                    { texture = texture, tileWH = tileWH, scrollSpeed = scrollSpeed, z = z, offset = offset, cameraPos = V2.fromTuple pos, cameraSize = V2.fromTuple size }
-
-        Custom f ->
-            f { cameraProj = cameraProj, time = time }
-
-
-{-| This can be used inside `veryCustom` instead of `WebGL.entity`.
-It's a custamized blend function that works well with textures with alpha.
--}
-renderTransparent : WebGL.Shader attributes uniforms varyings -> WebGL.Shader {} uniforms varyings -> WebGL.Mesh attributes -> uniforms -> WebGL.Entity
-renderTransparent =
-    WebGL.entityWith
-        [ Blend.custom
-            { r = 0
-            , g = 0
-            , b = 0
-            , a = 0
-            , color = Blend.customAdd Blend.srcAlpha Blend.oneMinusSrcAlpha
-            , alpha = Blend.customAdd Blend.one Blend.oneMinusSrcAlpha
-            }
-        ]
+    = Renderable ({ camera : Camera, screenSize : ( Float, Float ), time : Float } -> WebGL.Entity)
 
 
 {-|
@@ -208,14 +141,16 @@ rectangleWithOptions :
     { o | color : Color, position : Float3, size : Float2, rotation : Float, pivot : Float2 }
     -> Renderable
 rectangleWithOptions { color, rotation, position, size, pivot } =
-    let
-        ( ( px, py ), ( w, h ), ( x, y, z ) ) =
-            ( pivot, size, position )
-    in
-        ColoredRectangle
-            { transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
-            , color = colorToRGBVector color
-            }
+    veryCustom
+        (\{ camera, screenSize } ->
+            WebGL.entity vertColoredRect
+                fragUniColor
+                unitSquare
+                { transform = makeTransform position rotation size pivot
+                , color = colorToRGBVector color
+                , cameraProj = Camera.view camera screenSize
+                }
+        )
 
 
 {-|
@@ -251,20 +186,25 @@ spriteWithOptions :
     { o | texture : Maybe Texture, position : Float3, size : Float2, tiling : Float2, rotation : Float, pivot : Float2 }
     -> Renderable
 spriteWithOptions ({ texture, position, size, tiling, rotation, pivot } as args) =
-    let
-        ( ( w, h ), ( x, y, z ), ( px, py ), ( tw, th ) ) =
-            ( size, position, pivot, tiling )
-    in
-        case texture of
-            Just t ->
-                TexturedRectangle
-                    { transform = makeTransform ( x, y, z ) (rotation) ( w, h ) ( px, py )
-                    , texture = t
-                    , tileWH = vec2 tw th
-                    }
+    case texture of
+        Just t ->
+            veryCustom
+                (\{ camera, screenSize } ->
+                    rectWithFragment fragTextured
+                        { transform = makeTransform position rotation size pivot
+                        , texture = t
+                        , tileWH = V2.fromTuple tiling
+                        , cameraProj = Camera.view camera screenSize
+                        }
+                )
 
-            Nothing ->
-                rectangleZ { position = position, size = size, color = Color.grey }
+        Nothing ->
+            rectangleZ { position = position, size = size, color = Color.grey }
+
+
+rectWithFragment : WebGL.Shader {} { u | cameraProj : Mat4, transform : Mat4 } { vcoord : Vec2 } -> { u | cameraProj : Mat4, transform : Mat4 } -> WebGL.Entity
+rectWithFragment frag uniforms =
+    renderTransparent vertTexturedRect frag unitSquare uniforms
 
 
 {-|
@@ -336,23 +276,24 @@ animatedSpriteWithOptions :
     }
     -> Renderable
 animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, duration, numberOfFrames, rotation, pivot } =
-    let
-        ( ( x, y, z ), ( w, h ), ( blx, bly ), ( trx, try ), ( px, py ) ) =
-            ( position, size, bottomLeft, topRight, pivot )
-    in
-        case texture of
-            Nothing ->
-                rectangleZ { position = position, size = size, color = Color.grey }
+    case texture of
+        Just tex ->
+            veryCustom
+                (\{ camera, screenSize, time } ->
+                    rectWithFragment fragAnimTextured
+                        { transform = makeTransform position rotation size pivot
+                        , texture = tex
+                        , bottomLeft = V2.fromTuple bottomLeft
+                        , topRight = V2.fromTuple topRight
+                        , duration = duration
+                        , numberOfFrames = numberOfFrames
+                        , cameraProj = Camera.view camera screenSize
+                        , time = time
+                        }
+                )
 
-            Just tex ->
-                AnimatedSprite
-                    { transform = makeTransform ( x, y, z ) (rotation) ( w, h ) ( px, py )
-                    , texture = tex
-                    , bottomLeft = vec2 blx bly
-                    , topRight = vec2 trx try
-                    , duration = duration
-                    , numberOfFrames = numberOfFrames
-                    }
+        Nothing ->
+            rectangleZ { position = position, size = size, color = Color.grey }
 
 
 {-|
@@ -375,17 +316,24 @@ parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
             rectangleZ { position = ( 0, 0, z ), size = ( 1, 1 ), color = Color.grey }
 
         Just t ->
-            ParallaxScroll
-                { scrollSpeed = V2.fromTuple scrollSpeed
-                , z = z
-                , tileWH = V2.fromTuple tileWH
-                , texture = t
-                , offset = V2.fromTuple offset
-                }
+            veryCustom
+                (\{ camera, screenSize } ->
+                    renderTransparent vertParallaxScroll
+                        fragTextured
+                        unitSquare
+                        { scrollSpeed = V2.fromTuple scrollSpeed
+                        , z = z
+                        , tileWH = V2.fromTuple tileWH
+                        , texture = t
+                        , offset = V2.fromTuple offset
+                        , cameraPos = V2.fromTuple (Camera.getPosition camera)
+                        , cameraSize = V2.fromTuple (Camera.getViewSize screenSize camera)
+                        }
+                )
 
 
 {-|
-Just an alias for this crazy function, needed when you want to use customFragment
+Just an alias, needed when you want to use customFragment
 -}
 type alias MakeUniformsFunc a =
     { cameraProj : Mat4, time : Float, transform : Mat4 }
@@ -408,10 +356,11 @@ In practice, this might look something like this:
         {cameraProj=cameraProj, transform=transform, time=time, myUniform=someVector}
 
     render =
-        customFragment makeUniforms { fragmentShader=frag, position=p, size=s, rotation=0, pivot=(0,0) }
+        customFragment makeUniforms
+            { fragmentShader=frag, position=p, size=s, rotation=0, pivot=(0,0) }
 
     frag =
-        [|glsl
+        [glsls|
 
     precision mediump float;
 
@@ -424,6 +373,9 @@ In practice, this might look something like this:
     |]
 
 Don't pass the time along if your shader doesn't need it.
+
+Here is a small exmple that draws a circle:
+https://ellie-app.com/LSTb2NnkDWa1/0
 -}
 customFragment :
     MakeUniformsFunc u
@@ -437,38 +389,63 @@ customFragment :
        }
     -> Renderable
 customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } =
-    let
-        ( ( x, y, z ), ( w, h ), ( px, py ) ) =
-            ( position, size, pivot )
-    in
-        Custom
-            (\{ cameraProj, time } ->
-                renderTransparent vertTexturedRect
-                    fragmentShader
-                    unitSquare
-                    (makeUniforms
-                        { transform = makeTransform ( x, y, z ) (rotation) ( w, h ) ( px, py )
-                        , cameraProj = cameraProj
-                        , time = time
-                        }
-                    )
-            )
+    Renderable
+        (\{ camera, screenSize, time } ->
+            renderTransparent vertTexturedRect
+                fragmentShader
+                unitSquare
+                (makeUniforms
+                    { transform = makeTransform position rotation size pivot
+                    , cameraProj = Camera.view camera screenSize
+                    , time = time
+                    }
+                )
+        )
 
 
 {-|
 This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directly.
-If you use this you have to calculate your transformations yourself. (You can use Shaders.makeTransform)
+If you use this you have to calculate the transformations yourself. (You can use Shaders.makeTransform)
 
 If you need a square as attributes, you can take the one from Game.TwoD.Shapes
 
-    veryCustom (\{cameraProj, time} ->
+    veryCustom (\{camera, screenSize, time} ->
         WebGL.entity vert frag Shapes.unitSquare
           { u_crazyFrog = frogTexture
           , transform = Shaders.makeTransform (x, y, z) 0 (2, 4) (0, 0)
-          , camera = cameraProj
+          , cameraProj = Camera.view camera screenSize
           }
     )
 -}
-veryCustom : ({ cameraProj : Mat4, time : Float } -> WebGL.Entity) -> Renderable
+veryCustom : ({ camera : Camera, screenSize : ( Float, Float ), time : Float } -> WebGL.Entity) -> Renderable
 veryCustom =
-    Custom
+    Renderable
+
+
+{-| This can be used inside `veryCustom` instead of `WebGL.entity`.
+It's a custamized blend function that works well with textures with alpha.
+-}
+renderTransparent : WebGL.Shader attributes uniforms varyings -> WebGL.Shader {} uniforms varyings -> WebGL.Mesh attributes -> uniforms -> WebGL.Entity
+renderTransparent =
+    WebGL.entityWith
+        [ Blend.custom
+            { r = 0
+            , g = 0
+            , b = 0
+            , a = 0
+            , color = Blend.customAdd Blend.srcAlpha Blend.oneMinusSrcAlpha
+            , alpha = Blend.customAdd Blend.one Blend.oneMinusSrcAlpha
+            }
+        ]
+
+
+{-|
+Converts a Renderable to a WebGL.Entity.
+You don't need this unless you want to slowely introduce
+this library in a project that currently uses WebGL directly.
+
+    toWebGl time camera (w, h) renderable
+-}
+toWebGl : Float -> Camera -> Float2 -> Renderable -> WebGL.Entity
+toWebGl time camera screenSize (Renderable f) =
+    f { camera = camera, screenSize = screenSize, time = time }
