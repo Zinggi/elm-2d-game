@@ -1,4 +1,4 @@
-module Game.TwoD.Shapes exposing (unitSquare, Vertex)
+module Game.TwoD.Shapes exposing (unitSquare, unitTriangle, Vertex)
 
 {-|
 # Shapes for WebGL rendering.
@@ -9,6 +9,7 @@ Since we're dealing with 2d only,
 the only available shape is a square
 
 @docs unitSquare
+@docs unitTriangle
 
 @docs Vertex
 -}
@@ -39,5 +40,18 @@ unitSquare =
         , ( Vertex (vec2 0 1)
           , Vertex (vec2 1 0)
           , Vertex (vec2 1 1)
+          )
+        ]
+
+
+{-|
+A triangle with corners (0, 0), (0, 1), (1, 0)
+-}
+unitTriangle : Mesh Vertex
+unitTriangle =
+    WebGL.triangles
+        [ ( Vertex (vec2 0 0)
+          , Vertex (vec2 0 1)
+          , Vertex (vec2 1 0)
           )
         ]
