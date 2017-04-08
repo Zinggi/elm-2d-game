@@ -211,9 +211,6 @@ shapeWithOptions :
     -> Renderable
 shapeWithOptions shape { color, rotation, position, size, pivot } =
     let
-        ( ( px, py ), ( w, h ), ( x, y, z ) ) =
-            ( pivot, size, position )
-
         ( frag, attribs ) =
             case shape of
                 Rectangle ->
@@ -233,7 +230,7 @@ shapeWithOptions shape { color, rotation, position, size, pivot } =
                 renderTransparent vertColoredShape
                     frag
                     attribs
-                    { transform = makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
+                    { transform = makeTransform position rotation size pivot
                     , color = colorToRGBVector color
                     , cameraProj = Camera.view camera screenSize
                     }
