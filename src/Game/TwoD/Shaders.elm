@@ -1,6 +1,8 @@
 module Game.TwoD.Shaders exposing (..)
 
 {-|
+
+
 # Standard shaders for WebGL rendering.
 
 You don't need this module,
@@ -9,15 +11,23 @@ and a shader from here already provides one half.
 
 Or if you're using WebGL directly.
 
+
 ## Vertex shaders
+
 @docs vertColoredShape, vertTexturedRect, vertParallaxScroll
 
+
 ## Fragment shaders
-@docs fragTextured, fragAnimTextured, fragUniColor, fragUniColorCircle, fragUniColorRing
+
+@docs fragTextured, fragAnimTextured, fragManualAnimTextured, fragUniColor, fragUniColorCircle, fragUniColorRing
 
 ---
+
+
 ### useful helper functions
+
 @docs colorToRGBAVector, colorToRGBVector, makeTransform
+
 -}
 
 import WebGL exposing (Shader, Texture)
@@ -33,6 +43,7 @@ import Game.Helpers exposing (..)
 {-| Creates a transformation matrix usually used in the fragment shader.
 
     makeTransform ( x, y, z ) rotation ( w, h ) ( px, py )
+
 -}
 makeTransform : Float3 -> Float -> Float2 -> Float2 -> Mat4
 makeTransform ( x, y, z ) rotation ( w, h ) ( px, py ) =
@@ -68,8 +79,7 @@ colorToRGBAVector color =
             vec4 (toFloat red / 256) (toFloat green / 256) (toFloat blue / 256) (alpha / 256)
 
 
-{-|
-A simple shader that passes the texture coordinates along for the fragment shader.
+{-| A simple shader that passes the texture coordinates along for the fragment shader.
 Can be generally used if the fragment shader needs to display texture(s).
 -}
 vertTexturedRect : Shader Vertex { u | transform : Mat4, cameraProj : Mat4 } { vcoord : Vec2 }
@@ -89,8 +99,7 @@ void main () {
 |]
 
 
-{-|
-Display a tiled texture.
+{-| Display a tiled texture.
 TileWH specifies how many times the texture should be tiled.
 -}
 fragTextured : Shader {} { u | texture : Texture, tileWH : Vec2 } { vcoord : Vec2 }
@@ -109,8 +118,7 @@ void main () {
 |]
 
 
-{-|
-A shader to render spritesheet animations.
+{-| A shader to render spritesheet animations.
 It assumes that the animation frames are in one horizontal line
 -}
 fragAnimTextured : Shader {} { u | texture : Texture, bottomLeft : Vec2, topRight : Vec2, numberOfFrames : Int, duration : Float, time : Float } { vcoord : Vec2 }
@@ -139,8 +147,34 @@ void main () {
 |]
 
 
-{-|
-The most basic shader, renders a basic shape.
+{-| Same as the shader above, but controlled via frame number instead of time
+-}
+fragManualAnimTextured : Shader {} { u | texture : Texture, bottomLeft : Vec2, topRight : Vec2, numberOfFrames : Int, currentFrame : Int } { vcoord : Vec2 }
+fragManualAnimTextured =
+    [glsl|
+
+precision mediump float;
+
+uniform sampler2D texture;
+uniform vec2 bottomLeft;
+uniform vec2 topRight;
+uniform int numberOfFrames;
+uniform int currentFrame;
+varying vec2 vcoord;
+
+void main () {
+    float n = float(numberOfFrames);
+    float framePos = float(currentFrame);
+    vec2 stripSize = topRight - bottomLeft;
+    vec2 frameSize = vec2(stripSize.x / n, stripSize.y);
+    vec2 texCoord = bottomLeft + vec2(frameSize.x * framePos, 0) + vcoord * frameSize;
+
+    gl_FragColor = texture2D(texture, texCoord.xy);
+}
+|]
+
+
+{-| The most basic shader, renders a basic shape.
 Since it doesn't even pass along the texture coordinates,
 it's only use is to create a colored shape.
 -}
@@ -159,8 +193,7 @@ void main() {
 |]
 
 
-{-|
-A very simple shader, coloring the whole area in a single color
+{-| A very simple shader, coloring the whole area in a single color
 -}
 fragUniColor : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
 fragUniColor =
@@ -177,8 +210,7 @@ void main() {
 |]
 
 
-{-|
-A fragment Shader for rendering a single colored circle
+{-| A fragment Shader for rendering a single colored circle
 -}
 fragUniColorCircle : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
 fragUniColorCircle =
@@ -200,8 +232,7 @@ void main () {
 |]
 
 
-{-|
-A fragment Shader for rendering a transparent circle with a colored border
+{-| A fragment Shader for rendering a transparent circle with a colored border
 -}
 fragUniColorRing : Shader {} { u | color : Vec3 } { vcoord : Vec2 }
 fragUniColorRing =
@@ -223,8 +254,7 @@ void main () {
 |]
 
 
-{-|
-A shader that scrolls it's texture when the camera moves, but at not at the same speed.
+{-| A shader that scrolls it's texture when the camera moves, but at not at the same speed.
 Good for background images.
 -}
 vertParallaxScroll : Shader Vertex { u | cameraPos : Vec2, cameraSize : Vec2, scrollSpeed : Vec2, z : Float, offset : Vec2 } { vcoord : Vec2 }

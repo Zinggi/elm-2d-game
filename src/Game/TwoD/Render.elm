@@ -15,6 +15,7 @@ module Game.TwoD.Render
         , animatedSprite
         , animatedSpriteZ
         , animatedSpriteWithOptions
+        , manuallyManagedAnimatedSpriteWithOptions
         , customFragment
         , veryCustom
         , MakeUniformsFunc
@@ -25,7 +26,10 @@ module Game.TwoD.Render
         )
 
 {-|
+
+
 # 2D rendering module
+
 This module provides a way to render commonly used objects in 2d games
 like simple sprites and sprite animations.
 
@@ -36,7 +40,6 @@ suggested import:
 
     import Game.TwoD.Render as Render exposing (Renderable)
 
-
 Most functions to render something come in 3 forms:
 
     thing, thingZ, thingWithOptions
@@ -44,11 +47,9 @@ Most functions to render something come in 3 forms:
 The first is the most common one where you can specify
 the size, the position in 2d and some more.
 
-
 The second one is the same as the first, but with a 3d position.
 The z position goes from -1 to 1, everything outside this will be invisible.
 This can be used to put something in front or behind regardless of the render order.
-
 
 The last one gives you all possible options, e.g. the rotation
 , the pivot point of the rotation (normalized from 0 to 1), etc.
@@ -57,10 +58,13 @@ TODO: insert picture to visualize coordinate system.
 
 @docs Renderable
 
+
 ## Basic Shapes
+
 @docs shape
 @docs BasicShape, rectangle, triangle, circle, ring
 @docs shapeZ, shapeWithOptions
+
 
 ### With texture
 
@@ -75,23 +79,29 @@ Non power of two texture are possible, but [not encouraged](http://package.elm-l
 
 @docs sprite, spriteZ, spriteWithOptions
 
+
 ### Animated
-@docs animatedSprite, animatedSpriteZ, animatedSpriteWithOptions
+
+@docs animatedSprite, animatedSpriteZ, animatedSpriteWithOptions, manuallyManagedAnimatedSpriteWithOptions
+
 
 ### Background
+
 @docs parallaxScroll, parallaxScrollWithOptions
 
+
 ## Custom
+
 These are useful if you want to write your own GLSL shaders.
 When writing your own shaders, you might want to look at
 Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
-
 
 @docs customFragment
 @docs MakeUniformsFunc
 @docs veryCustom
 @docs renderTransparent
 @docs toWebGl
+
 -}
 
 import Color exposing (Color)
@@ -105,16 +115,14 @@ import Game.TwoD.Camera as Camera exposing (Camera)
 import Game.Helpers as Helpers exposing (..)
 
 
-{-|
-A representation of something that can be rendered.
+{-| A representation of something that can be rendered.
 To actually render a `Renderable` onto a web page use the `Game.TwoD.*` functions
 -}
 type Renderable
     = Renderable ({ camera : Camera, screenSize : ( Float, Float ), time : Float } -> WebGL.Entity)
 
 
-{-|
-A representation of a basic shape to use when rendering a ColoredShape
+{-| A representation of a basic shape to use when rendering a ColoredShape
 -}
 type BasicShape
     = Rectangle
@@ -151,12 +159,12 @@ ring =
     Ring
 
 
-{-|
-Converts a Renderable to a WebGL.Entity.
+{-| Converts a Renderable to a WebGL.Entity.
 You don't need this unless you want to slowly introduce
 this library in a project that currently uses WebGL directly.
 
     toWebGl time camera (w, h) renderable
+
 -}
 toWebGl : Float -> Camera -> Float2 -> Renderable -> WebGL.Entity
 toWebGl time camera screenSize (Renderable f) =
@@ -180,8 +188,7 @@ renderTransparent =
         ]
 
 
-{-|
-A colored shape, great for prototyping
+{-| A colored shape, great for prototyping
 -}
 shape : BasicShape -> { o | color : Color, position : Float2, size : Float2 } -> Renderable
 shape shape { size, position, color } =
@@ -192,8 +199,7 @@ shape shape { size, position, color } =
         shapeZ shape { size = size, position = ( x, y, 0 ), color = color }
 
 
-{-|
-The same, but with 3d position.
+{-| The same, but with 3d position.
 -}
 shapeZ : BasicShape -> { o | color : Color, position : Float3, size : Float2 } -> Renderable
 shapeZ shape { color, position, size } =
@@ -202,8 +208,7 @@ shapeZ shape { color, position, size } =
         { color = color, position = position, size = size, rotation = 0, pivot = ( 0, 0 ) }
 
 
-{-|
-A colored shape, that can also be rotated
+{-| A colored shape, that can also be rotated
 -}
 shapeWithOptions :
     BasicShape
@@ -237,8 +242,7 @@ shapeWithOptions shape { color, rotation, position, size, pivot } =
             )
 
 
-{-|
-A sprite.
+{-| A sprite.
 -}
 sprite : { o | texture : Maybe Texture, position : Float2, size : Float2 } -> Renderable
 sprite { texture, position, size } =
@@ -249,8 +253,7 @@ sprite { texture, position, size } =
         spriteZ { texture = texture, position = ( x, y, 0 ), size = size }
 
 
-{-|
-A sprite with 3d position
+{-| A sprite with 3d position
 -}
 spriteZ : { o | texture : Maybe Texture, position : Float3, size : Float2 } -> Renderable
 spriteZ { texture, position, size } =
@@ -258,13 +261,13 @@ spriteZ { texture, position, size } =
         { texture = texture, position = position, size = size, tiling = ( 1, 1 ), rotation = 0, pivot = ( 0, 0 ) }
 
 
-{-|
-A sprite with tiling and rotation.
+{-| A sprite with tiling and rotation.
 
     spriteWithOptions {config | tiling = (3,5)}
 
 will create a sprite with a texture that repeats itself 3 times horizontally and 5 times vertically.
 TODO: picture!
+
 -}
 spriteWithOptions :
     { o | texture : Maybe Texture, position : Float3, size : Float2, tiling : Float2, rotation : Float, pivot : Float2 }
@@ -291,11 +294,11 @@ rectWithFragment frag uniforms =
     renderTransparent vertTexturedRect frag unitSquare uniforms
 
 
-{-|
-An animated sprite. `bottomLeft` and `topRight` define a sub area from a texture
+{-| An animated sprite. `bottomLeft` and `topRight` define a sub area from a texture
 where the animation frames are located. It's a normalized coordinate from 0 to 1.
 
 TODO: picture!
+
 -}
 animatedSprite :
     { o
@@ -316,8 +319,7 @@ animatedSprite ({ position } as options) =
         animatedSpriteZ { options | position = ( x, y, 0 ) }
 
 
-{-|
-The same with 3d position
+{-| The same with 3d position
 -}
 animatedSpriteZ :
     { o
@@ -380,8 +382,42 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
             shapeZ Rectangle { position = position, size = size, color = Color.grey }
 
 
-{-|
-Used for scrolling backgrounds.
+{-| The same as animated sprite, but you control what frame to display.
+-}
+manuallyManagedAnimatedSpriteWithOptions :
+    { o
+        | texture : Maybe Texture
+        , position : Float3
+        , size : Float2
+        , bottomLeft : Float2
+        , topRight : Float2
+        , rotation : Float
+        , pivot : Float2
+        , numberOfFrames : Int
+        , currentFrame : Int
+    }
+    -> Renderable
+manuallyManagedAnimatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, numberOfFrames, currentFrame, rotation, pivot } =
+    case texture of
+        Just tex ->
+            veryCustom
+                (\{ camera, screenSize } ->
+                    rectWithFragment fragManualAnimTextured
+                        { transform = makeTransform position rotation size pivot
+                        , texture = tex
+                        , bottomLeft = V2.fromTuple bottomLeft
+                        , topRight = V2.fromTuple topRight
+                        , numberOfFrames = numberOfFrames
+                        , currentFrame = currentFrame
+                        , cameraProj = Camera.view camera screenSize
+                        }
+                )
+
+        Nothing ->
+            shapeZ Rectangle { position = position, size = size, color = Color.grey }
+
+
+{-| Used for scrolling backgrounds.
 This probably wont satisfy all possible needs for a scrolling background,
 but it can give you something that looks nice quickly.
 -}
@@ -390,8 +426,7 @@ parallaxScroll { scrollSpeed, tileWH, texture, z } =
     parallaxScrollWithOptions { scrollSpeed = scrollSpeed, tileWH = tileWH, texture = texture, z = z, offset = ( 0.5, 0.5 ) }
 
 
-{-|
-Same but with an offset parameter that you can use to position the background.
+{-| Same but with an offset parameter that you can use to position the background.
 -}
 parallaxScrollWithOptions : { o | scrollSpeed : Float2, z : Float, tileWH : Float2, offset : Float2, texture : Maybe Texture } -> Renderable
 parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
@@ -416,16 +451,14 @@ parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
                 )
 
 
-{-|
-Just an alias, needed when you want to use customFragment
+{-| Just an alias, needed when you want to use customFragment
 -}
 type alias MakeUniformsFunc a =
     { cameraProj : Mat4, time : Float, transform : Mat4 }
     -> { a | cameraProj : Mat4, transform : Mat4 }
 
 
-{-|
-This allows you to write your own custom fragment shader.
+{-| This allows you to write your own custom fragment shader.
 To learn about writing shaders, I recommend [this free book](https://thebookofshaders.com/00/).
 
 The type signature may look terrifying,
@@ -439,12 +472,12 @@ It's a vector that goes from (0,0) to (1,1)
 The `MakeUniformsFunc` allows you to pass along any additional uniforms you may need.
 In practice, this might look something like this:
 
-    makeUniforms {cameraProj, transform, time} =
-        {cameraProj=cameraProj, transform=transform, time=time, myUniform=someVector}
+    makeUniforms { cameraProj, transform, time } =
+        { cameraProj = cameraProj, transform = transform, time = time, myUniform = someVector }
 
     render =
         customFragment makeUniforms
-            { fragmentShader=frag, position=p, size=s, rotation=0, pivot=(0,0) }
+            { fragmentShader = frag, position = p, size = s, rotation = 0, pivot = ( 0, 0 ) }
 
     frag =
         [glsl|
@@ -462,7 +495,8 @@ In practice, this might look something like this:
 Don't pass the time along if your shader doesn't need it.
 
 Here is a small example that draws a circle:
-https://ellie-app.com/LSTb2NnkDWa1/0
+<https://ellie-app.com/LSTb2NnkDWa1/0>
+
 -}
 customFragment :
     MakeUniformsFunc u
@@ -491,8 +525,7 @@ customFragment makeUniforms { fragmentShader, position, size, rotation, pivot } 
         )
 
 
-{-|
-This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directly.
+{-| This allows you to specify your own attributes, vertex shader and fragment shader by using the WebGL library directly.
 If you use this you have to calculate the transformations yourself. (You can use Shaders.makeTransform)
 
 If you need a square as attributes, you can take the one from Game.TwoD.Shapes
@@ -504,6 +537,7 @@ If you need a square as attributes, you can take the one from Game.TwoD.Shapes
           , cameraProj = Camera.view camera screenSize
           }
     )
+
 -}
 veryCustom : ({ camera : Camera, screenSize : ( Float, Float ), time : Float } -> WebGL.Entity) -> Renderable
 veryCustom =
