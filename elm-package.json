@@ -1,5 +1,5 @@
 {
-    "version": "2.1.0",
+    "version": "3.0.0",
     "summary": "A 2D rendering engine based on WebGL",
     "repository": "https://github.com/Zinggi/elm-2d-game.git",
     "license": "MIT",

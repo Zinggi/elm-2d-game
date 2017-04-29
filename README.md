@@ -21,7 +21,7 @@ This library is for you, if
  * you've used elm-graphics, but are looking for a slightly more powerful option without going full WebGL.
 
 
-If you want to create a "real" game, I strongly recommend other options such as Unity / Unreal3/4 / LibGdx etc...
+If you want to create a "real" game, I strongly recommend other options such as Unity / Unreal3/4 / libGDX / LÖVE / MonoGame etc...
 
 
 ## Examples
@@ -44,16 +44,21 @@ However, the idea is that each of the mentioned missing topics can be created as
 
 ## Update log
 
-* ** 2.0.0 -> 3.0.0 **
+* ** 2.1.0 -> 3.0.0 **
     * **Breaking changes:**
         - Removed `rectangle`. Use `shape rectangle` instead
         - Changed what the pivot affects.
-        Previously, the pivot only affected the center of rotation.
-        The pivot now also affects where position refers to.
-        For instance, a pivot of (0.5, 0) means that the position parameter of the object now refers to its bottom center.   
-        If you want the previous behavior, use `(x + pivotX*w, y + pivotY*h)` instead of `(x, y)` for position.
+            + Previously, the pivot only affected the center of rotation.
+            The pivot now also affects where position refers to.
+            For instance, a pivot of (0.5, 0) means that the position parameter of the object now refers to its bottom center.
+            + If you want the previous behavior, use `(x + pivotX*w, y + pivotY*h)` instead of `(x, y)` for position.
+            + `makeTransform` is also affected by that change.
     * ** New stuff: **
         - Added more prototyping shapes, thanks to [@yourSenchou](https://github.com/yourSenchou).
+        - Added `manuallyManagedAnimatedSpriteWithOptions`
+
+* **2.0.0 -> 2.1.0**
+    * Exposed `renderTransparent`
 
 * **1.0.1 -> 2.0.0**
     * Updated to WebGL 2.0.
