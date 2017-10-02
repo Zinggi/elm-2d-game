@@ -44,6 +44,9 @@ However, the idea is that each of the mentioned missing topics can be created as
 
 ## Update log
 
+* ** 3.0.0 -> 3.1.0 **
+    * Added `viewportToGameCoordinates` thanks to [@Luftzig](https://github.com/Luftzig).
+
 * ** 2.1.0 -> 3.0.0 **
     * **Breaking changes:**
         - Removed `rectangle`. Use `shape rectangle` instead
