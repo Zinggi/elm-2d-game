@@ -17,12 +17,11 @@ module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, cu
 
 ## camera transformations
 
-@docs view, getViewSize, toCameraCoordinates
+@docs view, getViewSize, viewportToGameCoordinates
 
 -}
 
 import Math.Matrix4 as M4 exposing (Mat4)
-import Math.Vector2 as V2 exposing (Vec2, vec2)
 import Game.Helpers exposing (..)
 
 
