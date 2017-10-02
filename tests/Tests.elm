@@ -1,22 +1,17 @@
 module Tests exposing (..)
 
-import Game.TwoD.Camera exposing (Camera, custom, moveBy, toCameraCoordinates)
+import Game.TwoD.Camera exposing (Camera, custom, moveBy, viewportToGameCoordinates)
 import Expect exposing (Expectation)
-import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
 import Json.Decode exposing (decodeString)
 import Math.Vector2 exposing (toTuple)
-
-
-pixelRange =
-    Fuzz.intRange 0 100
 
 
 toElementToGameCoordinatesTest : { camera : Camera, click : ( Int, Int ), expected : ( Float, Float ) } -> Test
 toElementToGameCoordinatesTest { camera, click, expected } =
     let
         result =
-            toCameraCoordinates camera ( 100, 100 ) click
+            viewportToGameCoordinates camera ( 100, 100 ) click
     in
         test ("clicking on " ++ toString click ++ " with camera " ++ toString camera) <|
             \() -> Expect.equal (toTuple result) expected

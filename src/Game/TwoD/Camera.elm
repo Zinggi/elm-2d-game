@@ -1,4 +1,4 @@
-module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, custom, view, getViewSize, getPosition, follow, moveBy, moveTo, toCameraCoordinates)
+module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, custom, view, getViewSize, getPosition, follow, moveBy, moveTo, viewportToGameCoordinates)
 
 {-| A camera to view the game world.
 
@@ -161,13 +161,13 @@ follow speed dt target (Camera ({ position } as camera)) =
 {-| Convert coordinates on the canvas element to coordinates in the game.
 Coordinates on the canvas element are given relative to its top left corner.
 
-    elementToGameCoordinates camera (elementWidth, elementHeight) (positionX, positionY)
+    viewportToGameCoordinates camera (elementWidth, elementHeight) (positionX, positionY)
 
-Element coordinates can be extracted with a package like [Elm-Canvas/ElementRelativeMouseEvents](http://package.elm-lang.org/packages/Elm-Canvas/element-relative-mouse-events/1.0.0/ElementRelativeMouseEvents)
+Element click coordinates can be extracted with a package like [Elm-Canvas/ElementRelativeMouseEvents](http://package.elm-lang.org/packages/Elm-Canvas/element-relative-mouse-events/1.0.0/ElementRelativeMouseEvents)
 
 -}
-toCameraCoordinates : Camera -> ( Int, Int ) -> ( Int, Int ) -> Vec2
-toCameraCoordinates camera ( width, height ) ( x, y ) =
+viewportToGameCoordinates : Camera -> ( Int, Int ) -> ( Int, Int ) -> ( Float, Float )
+viewportToGameCoordinates camera ( width, height ) ( x, y ) =
     let
         {- Screen is (Ws, Hs) and starts at (0,0) to (Ws, Hs)
            view size is (Wv, Hv) starting from (-Wv / 2, -Hv / 2) to (Wv / 2, Hv / 2)
@@ -190,6 +190,6 @@ toCameraCoordinates camera ( width, height ) ( x, y ) =
             , (-(gameHeight / 2) + cameraYOffset)
             )
     in
-        vec2
-            (viewLeft + ((toFloat x - screenLeft) / (screenRight - screenLeft) * (viewRight - viewLeft)))
-            (viewTop + ((toFloat y - screenTop) / (screenBottom - screenTop) * (viewBottom - viewTop)))
+        ( viewLeft + ((toFloat x - screenLeft) / (screenRight - screenLeft) * (viewRight - viewLeft))
+        , viewTop + ((toFloat y - screenTop) / (screenBottom - screenTop) * (viewBottom - viewTop))
+        )
