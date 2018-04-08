@@ -21,7 +21,7 @@ This library is for you, if
  * you've used elm-graphics, but are looking for a slightly more powerful option without going full WebGL.
 
 
-If you want to create a "real" game, I strongly recommend other options such as Unity / Unreal3/4 / libGDX / LÖVE / MonoGame etc...
+If you want to create a "real" game, I strongly recommend other options such as Godot / LÖVE / libGDX / MonoGame / Unreal / Unity etc...
 
 
 ## Examples
