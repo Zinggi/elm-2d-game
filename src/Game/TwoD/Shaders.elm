@@ -1,4 +1,8 @@
-module Game.TwoD.Shaders exposing (..)
+module Game.TwoD.Shaders exposing
+    ( vertColoredShape, vertTexturedRect, vertParallaxScroll
+    , fragTextured, fragAnimTextured, fragManualAnimTextured, fragUniColor, fragUniColorCircle, fragUniColorRing
+    , colorToRGBAVector, colorToRGBVector, makeTransform
+    )
 
 {-|
 
@@ -30,14 +34,15 @@ Or if you're using WebGL directly.
 
 -}
 
-import WebGL exposing (Shader, Texture)
 import Color exposing (Color)
+import Game.Helpers exposing (..)
 import Game.TwoD.Shapes exposing (Vertex)
 import Math.Matrix4 as M4 exposing (Mat4)
 import Math.Vector2 as V2 exposing (Vec2)
 import Math.Vector3 as V3 exposing (Vec3, vec3)
 import Math.Vector4 exposing (Vec4, vec4)
-import Game.Helpers exposing (..)
+import WebGL exposing (Shader)
+import WebGL.Texture exposing (Texture)
 
 
 {-| Creates a transformation matrix usually used in the fragment shader.
@@ -60,23 +65,23 @@ makeTransform ( x, y, z ) rotation ( w, h ) ( px, py ) =
         pivot =
             M4.makeTranslate (vec3 -px -py 0)
     in
-        (M4.mul (M4.mul (M4.mul trans rot) scale) pivot)
+    M4.mul (M4.mul (M4.mul trans rot) scale) pivot
 
 
 {-| -}
 colorToRGBVector : Color -> Vec3
 colorToRGBVector color =
-    case Color.toRgb color of
+    case Color.toRgba color of
         { red, green, blue } ->
-            vec3 (toFloat red / 256) (toFloat green / 256) (toFloat blue / 256)
+            vec3 red green blue
 
 
 {-| -}
 colorToRGBAVector : Color -> Vec4
 colorToRGBAVector color =
-    case Color.toRgb color of
+    case Color.toRgba color of
         { red, green, blue, alpha } ->
-            vec4 (toFloat red / 256) (toFloat green / 256) (toFloat blue / 256) (alpha / 256)
+            vec4 red green blue alpha
 
 
 {-| A simple shader that passes the texture coordinates along for the fragment shader.

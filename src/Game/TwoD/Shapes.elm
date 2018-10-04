@@ -1,6 +1,12 @@
-module Game.TwoD.Shapes exposing (unitSquare, unitTriangle, Vertex)
+module Game.TwoD.Shapes exposing
+    ( unitSquare
+    , unitTriangle
+    , Vertex
+    )
 
 {-|
+
+
 # Shapes for WebGL rendering.
 
 You don't need this module,
@@ -13,14 +19,14 @@ If you don't believe me, see [here](http://iquilezles.org/index.html).
 @docs unitTriangle
 
 @docs Vertex
+
 -}
 
-import WebGL exposing (Mesh)
 import Math.Vector2 exposing (Vec2, vec2)
+import WebGL exposing (Mesh)
 
 
-{-|
-Just an alias for a 2d vector.
+{-| Just an alias for a 2d vector.
 Needs to be in a record because it will be passed as an
 attribute to the vertex shader
 -}
@@ -28,8 +34,7 @@ type alias Vertex =
     { position : Vec2 }
 
 
-{-|
-A square with corners (0, 0), (1, 1)
+{-| A square with corners (0, 0), (1, 1)
 -}
 unitSquare : Mesh Vertex
 unitSquare =
@@ -45,8 +50,7 @@ unitSquare =
         ]
 
 
-{-|
-A triangle with corners (0, 0), (0, 1), (1, 0)
+{-| A triangle with corners (0, 0), (0, 1), (1, 0)
 -}
 unitTriangle : Mesh Vertex
 unitTriangle =

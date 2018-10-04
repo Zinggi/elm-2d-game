@@ -1,29 +1,17 @@
-module Game.TwoD.Render
-    exposing
-        ( Renderable
-        , BasicShape
-        , rectangle
-        , triangle
-        , circle
-        , ring
-        , shape
-        , shapeZ
-        , shapeWithOptions
-        , sprite
-        , spriteZ
-        , spriteWithOptions
-        , animatedSprite
-        , animatedSpriteZ
-        , animatedSpriteWithOptions
-        , manuallyManagedAnimatedSpriteWithOptions
-        , customFragment
-        , veryCustom
-        , MakeUniformsFunc
-        , parallaxScroll
-        , parallaxScrollWithOptions
-        , toWebGl
-        , renderTransparent
-        )
+module Game.TwoD.Render exposing
+    ( Renderable
+    , shape
+    , BasicShape, rectangle, triangle, circle, ring
+    , shapeZ, shapeWithOptions
+    , sprite, spriteZ, spriteWithOptions
+    , animatedSprite, animatedSpriteWithOptions, manuallyManagedAnimatedSpriteWithOptions
+    , parallaxScroll, parallaxScrollWithOptions
+    , customFragment
+    , MakeUniformsFunc
+    , veryCustom
+    , renderTransparent
+    , toWebGl
+    )
 
 {-|
 
@@ -82,7 +70,7 @@ Non power of two texture are possible, but [not encouraged](http://package.elm-l
 
 ### Animated
 
-@docs animatedSprite, animatedSpriteZ, animatedSpriteWithOptions, manuallyManagedAnimatedSpriteWithOptions
+@docs animatedSprite, animatedSpriteWithOptions, manuallyManagedAnimatedSpriteWithOptions
 
 
 ### Background
@@ -105,21 +93,22 @@ Game.TwoD.Shaders and Game.TwoD.Shapes for reusable parts.
 -}
 
 import Color exposing (Color)
-import WebGL exposing (Texture)
-import WebGL.Settings.Blend as Blend
-import Math.Matrix4 exposing (Mat4)
-import Math.Vector2 as V2 exposing (Vec2, vec2)
+import Game.Helpers as Helpers exposing (..)
+import Game.TwoD.Camera as Camera exposing (Camera)
 import Game.TwoD.Shaders exposing (..)
 import Game.TwoD.Shapes exposing (unitSquare, unitTriangle)
-import Game.TwoD.Camera as Camera exposing (Camera)
-import Game.Helpers as Helpers exposing (..)
+import Math.Matrix4 exposing (Mat4)
+import Math.Vector2 as V2 exposing (Vec2, vec2)
+import WebGL exposing (Entity)
+import WebGL.Settings.Blend as Blend
+import WebGL.Texture exposing (Texture)
 
 
 {-| A representation of something that can be rendered.
 To actually render a `Renderable` onto a web page use the `Game.TwoD.*` functions
 -}
 type Renderable
-    = Renderable ({ camera : Camera, screenSize : ( Float, Float ), time : Float } -> WebGL.Entity)
+    = Renderable ({ camera : Camera, screenSize : ( Float, Float ), time : Float } -> Entity)
 
 
 {-| A representation of a basic shape to use when rendering a ColoredShape
@@ -163,7 +152,7 @@ ring =
 You don't need this unless you want to slowly introduce
 this library in a project that currently uses WebGL directly.
 
-    toWebGl time camera (w, h) renderable
+    toWebGl time camera ( w, h ) renderable
 
 -}
 toWebGl : Float -> Camera -> Float2 -> Renderable -> WebGL.Entity
@@ -191,20 +180,20 @@ renderTransparent =
 {-| A colored shape, great for prototyping
 -}
 shape : BasicShape -> { o | color : Color, position : Float2, size : Float2 } -> Renderable
-shape shape { size, position, color } =
+shape basicShape { size, position, color } =
     let
         ( x, y ) =
             position
     in
-        shapeZ shape { size = size, position = ( x, y, 0 ), color = color }
+    shapeZ basicShape { size = size, position = ( x, y, 0 ), color = color }
 
 
 {-| The same, but with 3d position.
 -}
 shapeZ : BasicShape -> { o | color : Color, position : Float3, size : Float2 } -> Renderable
-shapeZ shape { color, position, size } =
+shapeZ theShape { color, position, size } =
     shapeWithOptions
-        shape
+        theShape
         { color = color, position = position, size = size, rotation = 0, pivot = ( 0, 0 ) }
 
 
@@ -214,10 +203,10 @@ shapeWithOptions :
     BasicShape
     -> { o | color : Color, position : Float3, size : Float2, rotation : Float, pivot : Float2 }
     -> Renderable
-shapeWithOptions shape { color, rotation, position, size, pivot } =
+shapeWithOptions theShape { color, rotation, position, size, pivot } =
     let
         ( frag, attribs ) =
-            case shape of
+            case theShape of
                 Rectangle ->
                     ( fragUniColor, unitSquare )
 
@@ -230,16 +219,16 @@ shapeWithOptions shape { color, rotation, position, size, pivot } =
                 Ring ->
                     ( fragUniColorRing, unitSquare )
     in
-        veryCustom
-            (\{ camera, screenSize } ->
-                renderTransparent vertColoredShape
-                    frag
-                    attribs
-                    { transform = makeTransform position rotation size pivot
-                    , color = colorToRGBVector color
-                    , cameraProj = Camera.view camera screenSize
-                    }
-            )
+    veryCustom
+        (\{ camera, screenSize } ->
+            renderTransparent vertColoredShape
+                frag
+                attribs
+                { transform = makeTransform position rotation size pivot
+                , color = colorToRGBVector color
+                , cameraProj = Camera.view camera screenSize
+                }
+        )
 
 
 {-| A sprite.
@@ -250,7 +239,7 @@ sprite { texture, position, size } =
         ( x, y ) =
             position
     in
-        spriteZ { texture = texture, position = ( x, y, 0 ), size = size }
+    spriteZ { texture = texture, position = ( x, y, 0 ), size = size }
 
 
 {-| A sprite with 3d position
@@ -263,7 +252,7 @@ spriteZ { texture, position, size } =
 
 {-| A sprite with tiling and rotation.
 
-    spriteWithOptions {config | tiling = (3,5)}
+    spriteWithOptions { config | tiling = ( 3, 5 ) }
 
 will create a sprite with a texture that repeats itself 3 times horizontally and 5 times vertically.
 TODO: picture!
@@ -280,7 +269,7 @@ spriteWithOptions ({ texture, position, size, tiling, rotation, pivot } as args)
                     rectWithFragment fragTextured
                         { transform = makeTransform position rotation size pivot
                         , texture = t
-                        , tileWH = V2.fromTuple tiling
+                        , tileWH = v2FromTuple tiling
                         , cameraProj = Camera.view camera screenSize
                         }
                 )
@@ -303,27 +292,6 @@ TODO: picture!
 animatedSprite :
     { o
         | texture : Maybe Texture
-        , position : Float2
-        , size : Float2
-        , bottomLeft : Float2
-        , topRight : Float2
-        , numberOfFrames : Int
-        , duration : Float
-    }
-    -> Renderable
-animatedSprite ({ position } as options) =
-    let
-        ( x, y ) =
-            position
-    in
-        animatedSpriteZ { options | position = ( x, y, 0 ) }
-
-
-{-| The same with 3d position
--}
-animatedSpriteZ :
-    { o
-        | texture : Maybe Texture
         , position : Float3
         , size : Float2
         , bottomLeft : Float2
@@ -332,7 +300,7 @@ animatedSpriteZ :
         , duration : Float
     }
     -> Renderable
-animatedSpriteZ { texture, duration, numberOfFrames, position, size, bottomLeft, topRight } =
+animatedSprite { texture, duration, numberOfFrames, position, size, bottomLeft, topRight } =
     animatedSpriteWithOptions
         { texture = texture
         , position = position
@@ -369,8 +337,8 @@ animatedSpriteWithOptions { texture, position, size, bottomLeft, topRight, durat
                     rectWithFragment fragAnimTextured
                         { transform = makeTransform position rotation size pivot
                         , texture = tex
-                        , bottomLeft = V2.fromTuple bottomLeft
-                        , topRight = V2.fromTuple topRight
+                        , bottomLeft = v2FromTuple bottomLeft
+                        , topRight = v2FromTuple topRight
                         , duration = duration
                         , numberOfFrames = numberOfFrames
                         , cameraProj = Camera.view camera screenSize
@@ -405,8 +373,8 @@ manuallyManagedAnimatedSpriteWithOptions { texture, position, size, bottomLeft, 
                     rectWithFragment fragManualAnimTextured
                         { transform = makeTransform position rotation size pivot
                         , texture = tex
-                        , bottomLeft = V2.fromTuple bottomLeft
-                        , topRight = V2.fromTuple topRight
+                        , bottomLeft = v2FromTuple bottomLeft
+                        , topRight = v2FromTuple topRight
                         , numberOfFrames = numberOfFrames
                         , currentFrame = currentFrame
                         , cameraProj = Camera.view camera screenSize
@@ -440,13 +408,13 @@ parallaxScrollWithOptions { scrollSpeed, tileWH, texture, z, offset } =
                     renderTransparent vertParallaxScroll
                         fragTextured
                         unitSquare
-                        { scrollSpeed = V2.fromTuple scrollSpeed
+                        { scrollSpeed = v2FromTuple scrollSpeed
                         , z = z
-                        , tileWH = V2.fromTuple tileWH
+                        , tileWH = v2FromTuple tileWH
                         , texture = t
-                        , offset = V2.fromTuple offset
-                        , cameraPos = V2.fromTuple (Camera.getPosition camera)
-                        , cameraSize = V2.fromTuple (Camera.getViewSize screenSize camera)
+                        , offset = v2FromTuple offset
+                        , cameraPos = v2FromTuple (Camera.getPosition camera)
+                        , cameraSize = v2FromTuple (Camera.getViewSize screenSize camera)
                         }
                 )
 
@@ -530,13 +498,16 @@ If you use this you have to calculate the transformations yourself. (You can use
 
 If you need a square as attributes, you can take the one from Game.TwoD.Shapes
 
-    veryCustom (\{camera, screenSize, time} ->
-        WebGL.entity myVert myFrag Shapes.unitSquare
-          { u_crazyFrog = frogTexture
-          , transform = Shaders.makeTransform (x, y, z) 0 (2, 4) (0, 0)
-          , cameraProj = Camera.view camera screenSize
-          }
-    )
+    veryCustom
+        (\{ camera, screenSize, time } ->
+            WebGL.entity myVert
+                myFrag
+                Shapes.unitSquare
+                { u_crazyFrog = frogTexture
+                , transform = Shaders.makeTransform ( x, y, z ) 0 ( 2, 4 ) ( 0, 0 )
+                , cameraProj = Camera.view camera screenSize
+                }
+        )
 
 -}
 veryCustom : ({ camera : Camera, screenSize : ( Float, Float ), time : Float } -> WebGL.Entity) -> Renderable

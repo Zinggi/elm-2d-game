@@ -1,4 +1,8 @@
-module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, custom, view, getViewSize, getPosition, follow, moveBy, moveTo, viewportToGameCoordinates)
+module Game.TwoD.Camera exposing
+    ( Camera, fixedArea, fixedWidth, fixedHeight, custom
+    , getPosition, moveBy, moveTo, follow
+    , view, getViewSize, viewportToGameCoordinates
+    )
 
 {-| A camera to view the game world.
 
@@ -21,8 +25,8 @@ module Game.TwoD.Camera exposing (Camera, fixedWidth, fixedHeight, fixedArea, cu
 
 -}
 
-import Math.Matrix4 as M4 exposing (Mat4)
 import Game.Helpers exposing (..)
+import Math.Matrix4 as M4 exposing (Mat4)
 
 
 type Size
@@ -59,11 +63,11 @@ fixedHeight h pos =
 This is useful in a top down game.
 You probably want to specify the area as a multiplication of width and height:
 
-    fixedArea (16*10) (x, y)
+    fixedArea (16 * 10) ( x, y )
 
 This means the camera will always show 160 square units of your game.
 In practice, this means that on a 16:10 viewport, 16 by 10 units of your game will be visible.
-But on a 4:3 viewport it would show 14.6 by 10.95 units. (sqrt(16*10*4/3)=14.6, sqrt(16*10*3/4)=10.95)
+But on a 4:3 viewport it would show 14.6 by 10.95 units. (sqrt(16\_10\_4/3)=14.6, sqrt(16\_10\_3/4)=10.95)
 
 -}
 fixedArea : Float -> ( Float, Float ) -> Camera
@@ -96,10 +100,10 @@ view ((Camera { position }) as camera) size =
         ( w, h ) =
             scale 0.5 (getViewSize size camera)
 
-        ( l, r, d, u ) =
-            ( x - w, x + w, y - h, y + h )
+        ( ( l, r ), ( d, u ) ) =
+            ( ( x - w, x + w ), ( y - h, y + h ) )
     in
-        M4.makeOrtho2D l r d u
+    M4.makeOrtho2D l r d u
 
 
 {-| Given the screen size, gets the width and height in game units
@@ -126,14 +130,14 @@ getPosition (Camera { position }) =
     position
 
 
-{-| Move a camera by the given vector *relative* to the camera.
+{-| Move a camera by the given vector _relative_ to the camera.
 -}
 moveBy : ( Float, Float ) -> Camera -> Camera
 moveBy offset (Camera camera) =
     Camera { camera | position = add camera.position offset }
 
 
-{-| Move a camera to the given location. In *absolute* coordinates.
+{-| Move a camera to the given location. In _absolute_ coordinates.
 -}
 moveTo : ( Float, Float ) -> Camera -> Camera
 moveTo pos (Camera camera) =
@@ -149,18 +153,18 @@ follow : Float -> Float -> ( Float, Float ) -> Camera -> Camera
 follow speed dt target (Camera ({ position } as camera)) =
     let
         vectorToTarget =
-            (sub target position)
+            sub target position
 
         newPosition =
-            (add position (scale (speed * dt) vectorToTarget))
+            add position (scale (speed * dt) vectorToTarget)
     in
-        Camera { camera | position = newPosition }
+    Camera { camera | position = newPosition }
 
 
 {-| Convert coordinates on the canvas element to coordinates in the game.
 Coordinates on the canvas element are given relative to its top left corner.
 
-    viewportToGameCoordinates camera (elementWidth, elementHeight) (positionX, positionY)
+    viewportToGameCoordinates camera ( elementWidth, elementHeight ) ( positionX, positionY )
 
 Element click coordinates can be extracted with a package like [Elm-Canvas/ElementRelativeMouseEvents](http://package.elm-lang.org/packages/Elm-Canvas/element-relative-mouse-events/1.0.0/ElementRelativeMouseEvents)
 
@@ -173,8 +177,8 @@ viewportToGameCoordinates camera ( width, height ) ( x, y ) =
            so screen position (Ws, Hs) should be (Wv / 2, Hv / 2)
            so Ws = Wv / 2 -> Wv = 2 Ws
         -}
-        ( screenLeft, screenRight, screenTop, screenBottom ) =
-            ( toFloat 0, toFloat width, toFloat 0, toFloat height )
+        ( ( screenLeft, screenRight ), ( screenTop, screenBottom ) ) =
+            ( ( 0, toFloat width ), ( 0, toFloat height ) )
 
         ( gameWidth, gameHeight ) =
             getViewSize ( toFloat width, toFloat height ) camera
@@ -182,13 +186,15 @@ viewportToGameCoordinates camera ( width, height ) ( x, y ) =
         ( cameraXOffset, cameraYOffset ) =
             getPosition camera
 
-        ( viewLeft, viewRight, viewTop, viewBottom ) =
-            ( (-(gameWidth / 2)) + cameraXOffset
-            , (gameWidth / 2) + cameraXOffset
-            , (gameHeight / 2) + cameraYOffset
-            , (-(gameHeight / 2) + cameraYOffset)
+        ( ( viewLeft, viewRight ), ( viewTop, viewBottom ) ) =
+            ( ( -(gameWidth / 2) + cameraXOffset
+              , (gameWidth / 2) + cameraXOffset
+              )
+            , ( (gameHeight / 2) + cameraYOffset
+              , -(gameHeight / 2) + cameraYOffset
+              )
             )
     in
-        ( viewLeft + ((toFloat x - screenLeft) / (screenRight - screenLeft) * (viewRight - viewLeft))
-        , viewTop + ((toFloat y - screenTop) / (screenBottom - screenTop) * (viewBottom - viewTop))
-        )
+    ( viewLeft + ((toFloat x - screenLeft) / (screenRight - screenLeft) * (viewRight - viewLeft))
+    , viewTop + ((toFloat y - screenTop) / (screenBottom - screenTop) * (viewBottom - viewTop))
+    )

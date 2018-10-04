@@ -1,0 +1,23 @@
+{
+    "type": "package",
+    "name": "Zinggi/elm-2d-game",
+    "summary": "A 2D rendering engine based on WebGL",
+    "license": "MIT",
+    "version": "3.1.0",
+    "exposed-modules": [
+        "Game.TwoD",
+        "Game.TwoD.Camera",
+        "Game.TwoD.Render",
+        "Game.TwoD.Shapes",
+        "Game.TwoD.Shaders"
+    ],
+    "elm-version": "0.19.0 <= v < 0.20.0",
+    "dependencies": {
+        "avh4/elm-color": "1.0.0 <= v < 2.0.0",
+        "elm/core": "1.0.0 <= v < 2.0.0",
+        "elm/html": "1.0.0 <= v < 2.0.0",
+        "elm-explorations/linear-algebra": "1.0.3 <= v < 2.0.0",
+        "elm-explorations/webgl": "1.0.1 <= v < 2.0.0"
+    },
+    "test-dependencies": {}
+}
