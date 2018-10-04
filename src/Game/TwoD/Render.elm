@@ -63,7 +63,7 @@ A gray rectangle will be displayed instead.
 For loading textures I suggest using the [game-resources library](http://package.elm-lang.org/packages/Zinggi/elm-game-resources/latest).
 
 **NOTE**: Texture dimensions should be a power of 2, e.g. (2^n)x(2^m), like 4x16, 16x16, 512x256, etc.
-Non power of two texture are possible, but [not encouraged](http://package.elm-lang.org/packages/elm-community/webgl/latest/WebGL-Texture#Error).
+Non power of two texture are possible, but [not encouraged](https://package.elm-lang.org/packages/elm-explorations/webgl/latest/WebGL-Texture#Error).
 
 @docs sprite, spriteZ, spriteWithOptions
 
