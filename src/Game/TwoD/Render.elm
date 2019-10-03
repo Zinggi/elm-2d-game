@@ -101,6 +101,7 @@ import Math.Matrix4 exposing (Mat4)
 import Math.Vector2 as V2 exposing (Vec2, vec2)
 import WebGL exposing (Entity)
 import WebGL.Settings.Blend as Blend
+import WebGL.Settings.DepthTest as DepthTest
 import WebGL.Texture exposing (Texture)
 
 
@@ -174,6 +175,7 @@ renderTransparent =
             , color = Blend.customAdd Blend.srcAlpha Blend.oneMinusSrcAlpha
             , alpha = Blend.customAdd Blend.one Blend.oneMinusSrcAlpha
             }
+        , DepthTest.default
         ]
 
 
