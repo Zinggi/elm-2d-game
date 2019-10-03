@@ -13,7 +13,7 @@
             "elm/html": "1.0.0",
             "elm-explorations/linear-algebra": "1.0.3",
             "elm-explorations/webgl": "1.1.1",
-            "ohanhi/keyboard": "1.1.0",
+            "ohanhi/keyboard": "2.0.0",
             "Zinggi/elm-game-resources": "2.0.1"
         },
         "indirect": {
