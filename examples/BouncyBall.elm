@@ -6,8 +6,8 @@ import Browser
 import Browser.Events exposing (onAnimationFrameDelta)
 import Color
 import Game.TwoD as Game
-import Game.TwoD.Camera as Camera exposing (Camera)
-import Game.TwoD.Render as Render exposing (Renderable, circle, rectangle)
+import Game.TwoD.Camera as Camera
+import Game.TwoD.Render as Render exposing (circle, rectangle)
 import Html exposing (..)
 
 
@@ -30,10 +30,12 @@ init _ =
     )
 
 
+subs : Model -> Sub Msg
 subs m =
     onAnimationFrameDelta Tick
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Tick dt ->
@@ -42,6 +44,7 @@ update msg model =
             )
 
 
+tick : Float -> Model -> Model
 tick dt { position, velocity } =
     let
         ( ( x, y ), ( vx, vy ) ) =

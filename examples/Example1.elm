@@ -8,7 +8,7 @@ import Color
 import Game.Resources as Resources exposing (Resources)
 import Game.TwoD as Game
 import Game.TwoD.Camera as Camera exposing (Camera)
-import Game.TwoD.Render as Render exposing (Renderable, rectangle, ring)
+import Game.TwoD.Render as Render exposing (BasicShape, Renderable, rectangle, ring)
 import Html exposing (..)
 import Html.Attributes exposing (..)
 
@@ -17,6 +17,10 @@ type alias Model =
     { time : Float
     , resources : Resources
     }
+
+
+type alias Float2 =
+    ( Float, Float )
 
 
 camera : Camera
@@ -38,10 +42,12 @@ init _ =
     )
 
 
+subs : Model -> Sub Msg
 subs m =
     onAnimationFrameDelta Tick
 
 
+renderRect : BasicShape -> Float2 -> Float2 -> Bool -> Renderable
 renderRect shape size ( x, y ) isRed =
     Render.shape shape
         { position = ( x, y )
@@ -55,6 +61,7 @@ renderRect shape size ( x, y ) isRed =
         }
 
 
+renderBar : Float -> Renderable
 renderBar r =
     Render.shapeWithOptions rectangle
         { position = ( 0, -0.01, 0 )
@@ -65,6 +72,7 @@ renderBar r =
         }
 
 
+renderBox : Resources -> Float2 -> Float2 -> Float -> Float -> Renderable
 renderBox res ( w, h ) ( x, y ) r tileY =
     Render.spriteWithOptions
         { size = ( w, h )
@@ -76,6 +84,7 @@ renderBox res ( w, h ) ( x, y ) r tileY =
         }
 
 
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         Resources rMsg ->
@@ -106,6 +115,7 @@ view m =
         ]
 
 
+renderGuy : Resources -> Float2 -> Float -> Float -> Renderable
 renderGuy res ( x, y ) flip d =
     Render.animatedSpriteWithOptions
         { position = ( x, y, 0 )

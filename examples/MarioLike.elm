@@ -89,7 +89,9 @@ init _ =
 
 
 type alias Input =
-    { x : Int, y : Int }
+    { x : Int
+    , y : Int
+    }
 
 
 
