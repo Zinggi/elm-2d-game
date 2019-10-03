@@ -229,8 +229,12 @@ varying vec2 vcoord;
 void main () {
   float dist = length(vec2(0.5, 0.5) - vcoord);
 
-  float alpha = smoothstep(0.5 - 0.01, 0.5, dist);
-  vec4 color = vec4(color, 1.0 - alpha);
+  float alpha = 1.0 - smoothstep(0.5 - 0.01, 0.5, dist);
+  vec4 color = vec4(color, alpha);
+
+  if (alpha <= 0.01) {
+      discard;
+  }
 
   gl_FragColor = color;
 }
@@ -253,6 +257,10 @@ void main () {
 
   float alpha = smoothstep(0.5, 0.5 - 0.01, dist) * smoothstep(0.49 - 0.01, 0.49, dist);
   vec4 color = vec4(color, alpha);
+
+  if (alpha <= 0.01) {
+      discard;
+  }
 
   gl_FragColor = color;
 }
