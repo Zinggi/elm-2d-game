@@ -44,10 +44,13 @@ However, the idea is that each of the mentioned missing topics can be created as
 
 ## Update log
 
-* ** 3.0.0 -> 3.1.0 **
+* ** 3.1 -> 4.0 **
+    * Upgrade to elm 0.19
+
+* ** 3.0 -> 3.1 **
     * Added `viewportToGameCoordinates` thanks to [@Luftzig](https://github.com/Luftzig).
 
-* ** 2.1.0 -> 3.0.0 **
+* ** 2.1 -> 3.0 **
     * **Breaking changes:**
         - Removed `rectangle`. Use `shape rectangle` instead
         - Changed what the pivot affects.
@@ -60,9 +63,9 @@ However, the idea is that each of the mentioned missing topics can be created as
         - Added more prototyping shapes, thanks to [@yourSenchou](https://github.com/yourSenchou).
         - Added `manuallyManagedAnimatedSpriteWithOptions`
 
-* **2.0.0 -> 2.1.0**
+* **2.0 -> 2.1**
     * Exposed `renderTransparent`
 
-* **1.0.1 -> 2.0.0**
+* **1.0 -> 2.0**
     * Updated to WebGL 2.0.
     * Renamed Vertex attribute `a_position` to `position`
