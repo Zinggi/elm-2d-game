@@ -1,5 +1,6 @@
 module Game.TwoD.Render exposing
     ( Renderable
+    , Float2, Float3
     , shape
     , BasicShape, rectangle, triangle, circle, ring
     , shapeZ, shapeWithOptions
@@ -45,6 +46,8 @@ The last one gives you all possible options, e.g. the rotation
 TODO: insert picture to visualize coordinate system.
 
 @docs Renderable
+
+@docs Float2, Float3
 
 
 ## Basic Shapes
@@ -119,6 +122,16 @@ type BasicShape
     | Triangle
     | Circle
     | Ring
+
+
+{-| -}
+type alias Float2 =
+    ( Float, Float )
+
+
+{-| -}
+type alias Float3 =
+    ( Float, Float, Float )
 
 
 {-| BasicShape constructor for a rectangle
