@@ -5,6 +5,10 @@ This library aims to enable creating 2d games based on WebGL using elm.
 TODO: pretty pictures and more examples
 
 
+## Alternative libraries
+
+Check out https://korban.net/elm/catalog/packages/game-dev/rendering for similar libraries and other approaches to game development.
+
 ## Related Libraries
 
   * [game-resources](http://package.elm-lang.org/packages/Zinggi/elm-game-resources/latest) - A library for managing textures
